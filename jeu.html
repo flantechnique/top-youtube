@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Jeu — Top YouTube</title>
+<meta name="description" content="Devine les statistiques des vidéos du Top YouTube : Le Juste Prix et Face à Face, classement quotidien et hebdomadaire.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --bg: #faf8f5; --bg-raised: #ffffff; --ink: #201a16; --ink-soft: #5c5148; --ink-faint: #948a80;
+    --line: #e7ded4; --accent: #e8452f; --accent-ink: #ffffff; --accent-soft: #fbe3de;
+    --gold: #c8860a; --gold-bg: #fbf0da; --chip-bg: #f1ece4; --scrim: rgba(32,26,22,0.5);
+    --positive: #2f7d4f; --negative: #c33a3a;
+    --shadow: 0 1px 2px rgba(32,26,22,0.06), 0 8px 24px -12px rgba(32,26,22,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17130f; --bg-raised: #211b16; --ink: #f3ede5; --ink-soft: #b8ac9f; --ink-faint: #7d7266;
+      --line: #332b23; --accent: #ff6a4d; --accent-ink: #1a0d08; --accent-soft: #3a2118;
+      --gold: #e5a53a; --gold-bg: #332609; --chip-bg: #2a231c; --scrim: rgba(0,0,0,0.65);
+      --positive: #4fae74; --negative: #e06262;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17130f; --bg-raised: #211b16; --ink: #f3ede5; --ink-soft: #b8ac9f; --ink-faint: #7d7266;
+    --line: #332b23; --accent: #ff6a4d; --accent-ink: #1a0d08; --accent-soft: #3a2118;
+    --gold: #e5a53a; --gold-bg: #332609; --chip-bg: #2a231c; --scrim: rgba(0,0,0,0.65);
+    --positive: #4fae74; --negative: #e06262;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Source Sans 3', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 80px; }
+  header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .brand h1 { font-family: 'Big Shoulders Display', system-ui, sans-serif; font-weight: 800; font-size: clamp(1.9rem, 5vw, 2.5rem); letter-spacing: 0.01em; margin: 0; line-height: 0.95; }
+  .brand h1 a { color: var(--ink); text-decoration: none; }
+  .brand h1 span { color: var(--accent); }
+  .backlink { display: inline-block; margin: 10px 0 22px; font-size: 0.85rem; color: var(--ink-faint); text-decoration: none; }
+  .backlink:hover { color: var(--accent); }
+
+  .panel { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow); }
+  .panel h2 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.4rem; margin: 0 0 6px; }
+  .panel p.sub { margin: 0 0 14px; color: var(--ink-soft); font-size: 0.9rem; }
+
+  .g-signin { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #gsiBtn { flex: none; }
+  .pseudo-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pseudo-row input { font: inherit; font-size: 0.95rem; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 200px; }
+  .btn { font: inherit; font-weight: 600; font-size: 0.9rem; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  .btn:hover { opacity: 0.9; }
+  .btn.ghost { background: transparent; color: var(--ink-soft); border-color: var(--line); }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--ink); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hint { font-size: 0.82rem; color: var(--ink-faint); margin-top: 6px; }
+  .err { color: var(--negative); font-size: 0.85rem; margin-top: 6px; }
+
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .mode-card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 16px; cursor: pointer; text-align: left; font: inherit; color: inherit; box-shadow: var(--shadow); }
+  .mode-card:hover { border-color: var(--accent); }
+  .mode-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .mode-card .emoji { font-size: 1.6rem; }
+  .mode-card h3 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.15rem; margin: 6px 0 4px; }
+  .mode-card p { margin: 0; font-size: 0.82rem; color: var(--ink-soft); }
+  @media (max-width: 560px) { .modes { grid-template-columns: 1fr; } }
+
+  .round-progress { display: flex; gap: 6px; margin-bottom: 14px; }
+  .round-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--chip-bg); color: var(--ink-faint); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .round-dot.done { background: var(--positive); color: #fff; }
+  .round-dot.fail { background: var(--negative); color: #fff; }
+  .round-dot.active { background: var(--accent); color: var(--accent-ink); }
+
+  .jp-video { display: flex; gap: 14px; margin-bottom: 14px; }
+  .jp-thumb { width: 160px; flex: none; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); }
+  .jp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .jp-meta h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; line-height: 1.3; }
+  .jp-meta .channel { margin: 0 0 8px; font-size: 0.85rem; color: var(--ink-soft); }
+  .jp-meta .ask { font-size: 0.9rem; font-weight: 600; color: var(--accent); }
+  .jp-guess-row { display: flex; gap: 8px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+  .jp-guess-row input { font: inherit; font-size: 1.05rem; font-family: 'IBM Plex Mono', monospace; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 160px; }
+  .jp-result { font-weight: 700; font-size: 1rem; margin: 6px 0; }
+  .jp-result.higher { color: var(--negative); }
+  .jp-result.lower { color: var(--negative); }
+  .jp-result.correct { color: var(--positive); }
+  .jp-attempts { font-size: 0.8rem; color: var(--ink-faint); font-family: 'IBM Plex Mono', monospace; }
+  .timer { font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; color: var(--ink-faint); }
+  .timer.low { color: var(--negative); font-weight: 700; }
+
+  .fa-pair { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .fa-video { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; text-align: center; }
+  .fa-video .thumb { border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); margin-bottom: 8px; }
+  .fa-video .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fa-video h4 { margin: 0 0 4px; font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
+  .fa-video .channel { margin: 0 0 10px; font-size: 0.78rem; color: var(--ink-soft); }
+  .fa-video.correct { border-color: var(--positive); background: color-mix(in srgb, var(--positive) 12%, var(--bg)); }
+  .fa-video.wrong { border-color: var(--negative); }
+  .fa-vs { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--ink-faint); }
+  .fa-value { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--ink); margin-top: 4px; }
+
+  .score-summary { text-align: center; padding: 20px 10px; }
+  .score-summary .big { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 2.4rem; color: var(--accent); }
+  .score-summary p { color: var(--ink-soft); font-size: 0.9rem; }
+
+  .lb-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .lb-tab { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; }
+  .lb-tab[aria-pressed="true"] { background: var(--chip-bg); color: var(--ink); border-color: var(--ink-faint); }
+  table.lb { width: 100%; border-collapse: collapse; }
+  table.lb th, table.lb td { padding: 8px 10px; text-align: left; font-size: 0.88rem; }
+  table.lb th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); border-bottom: 1px solid var(--line); }
+  table.lb td { border-bottom: 1px solid var(--line); }
+  table.lb tr:last-child td { border-bottom: none; }
+  table.lb td.rk { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; color: var(--ink-faint); width: 30px; }
+  table.lb td.sc { font-family: 'IBM Plex Mono', monospace; text-align: right; font-weight: 600; color: var(--accent); }
+
+  footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.78rem; }
+  footer a { color: var(--ink-faint); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><h1><a href="index.html">Top<span> YouTube</span></a></h1></div>
+  </header>
+  <a class="backlink" href="index.html">&larr; Retour au classement</a>
+
+  <div class="panel" id="authPanel">
+    <h2>🎮 Le Jeu</h2>
+    <p class="sub">Deviens le roi des statistiques YouTube. Connexion Google requise pour jouer et figurer au classement — tu choisis un pseudo, ton nom Google n'est jamais affiché.</p>
+    <div class="g-signin">
+      <div id="gsiBtn"></div>
+      <span id="authStatus" class="hint"></span>
+    </div>
+    <div id="pseudoForm" class="pseudo-row" hidden style="margin-top:12px;">
+      <input type="text" id="pseudoInput" placeholder="Choisis ton pseudo" maxlength="20">
+      <button class="btn" id="pseudoSubmit" type="button">Valider</button>
+    </div>
+    <p class="err" id="authErr" hidden></p>
+  </div>
+
+  <div id="gameArea" hidden>
+    <div class="panel">
+      <p class="sub" style="margin-bottom:10px;">Connecté sous <strong id="pseudoDisplay"></strong> · <button class="btn ghost" id="changePseudo" type="button" style="padding:4px 10px;font-size:0.78rem;">changer de pseudo</button></p>
+      <div class="modes">
+        <button class="mode-card" data-mode="juste_prix" type="button" aria-pressed="false">
+          <div class="emoji">💰</div>
+          <h3>Le Juste Prix</h3>
+          <p>Devine le nombre de vues, likes ou commentaires d'une vidéo du Top, en 6 essais maxi et 30 secondes par manche.</p>
+        </button>
+        <button class="mode-card" data-mode="face_a_face" type="button" aria-pressed="false">
+          <div class="emoji">⚔️</div>
+          <h3>Face à Face</h3>
+          <p>Deux vidéos du Top s'affrontent : laquelle a généré le plus de vues, de likes ou de commentaires ?</p>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel" id="playPanel" hidden></div>
+
+    <div class="panel">
+      <h2>Classement</h2>
+      <p class="sub" id="lbModeLabel"></p>
+      <div class="lb-tabs">
+        <button class="lb-tab" data-scope="daily" aria-pressed="true">Aujourd'hui</button>
+        <button class="lb-tab" data-scope="weekly" aria-pressed="false">Cette semaine</button>
+      </div>
+      <table class="lb" id="lbTable"><tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Choisis un mode de jeu pour voir le classement.</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <footer>Top YouTube · <a href="index.html">Classement</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  const GOOGLE_CLIENT_ID = '709775807833-09olj4buog3tg64sq5s63u6m3a9aveni.apps.googleusercontent.com';
+  const GAME_FN_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/game';
+  const METRIC_LABEL = { viewCount: 'vues', likeCount: 'likes', commentCount: 'commentaires' };
+  const ROUND_TIME_LIMIT_MS = 30000;
+
+  const $ = (id) => document.getElementById(id);
+  const fmtFull = new Intl.NumberFormat('fr-FR');
+  const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  let idToken = sessionStorage.getItem('tyt_id_token') || null;
+  let pseudo = null;
+  let currentMode = null;
+  let rounds = [];
+  let roundStates = []; // per-round UI state
+  let roundIdx = 0;
+  let lbScope = 'daily';
+
+  async function callGame(action, payload) {
+    const resp = await fetch(GAME_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+    return data;
+  }
+
+  function handleCredentialResponse(response) {
+    idToken = response.credential;
+    sessionStorage.setItem('tyt_id_token', idToken);
+    afterSignIn();
+  }
+
+  function initGsi() {
+    if (!window.google || !google.accounts || !google.accounts.id) { setTimeout(initGsi, 300); return; }
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
+    google.accounts.id.renderButton($('gsiBtn'), { theme: 'outline', size: 'medium', text: 'signin_with', locale: 'fr' });
+    if (idToken) afterSignIn();
+  }
+
+  async function afterSignIn() {
+    $('authStatus').textContent = 'Vérification…';
+    try {
+      const { pseudo: p } = await callGame('get_pseudo', { idToken });
+      if (p) { pseudo = p; showGame(); }
+      else { $('pseudoForm').hidden = false; $('authStatus').textContent = 'Connecté — choisis un pseudo pour jouer.'; }
+    } catch (e) {
+      idToken = null; sessionStorage.removeItem('tyt_id_token');
+      $('authErr').hidden = false; $('authErr').textContent = 'Session Google expirée, reconnecte-toi.';
+    }
+  }
+
+  $('pseudoSubmit').addEventListener('click', async () => {
+    const val = $('pseudoInput').value.trim();
+    $('authErr').hidden = true;
+    try {
+      const { pseudo: p } = await callGame('set_pseudo', { idToken, pseudo: val });
+      pseudo = p; showGame();
+    } catch (e) { $('authErr').hidden = false; $('authErr').textContent = e.message; }
+  });
+
+  $('changePseudo').addEventListener('click', () => {
+    $('gameArea').hidden = true; $('authPanel').hidden = false;
+    $('pseudoForm').hidden = false; $('pseudoInput').value = pseudo || '';
+    $('authStatus').textContent = 'Choisis un nouveau pseudo.';
+  });
+
+  function showGame() {
+    $('authPanel').hidden = true;
+    $('gameArea').hidden = false;
+    $('pseudoDisplay').textContent = pseudo;
+  }
+
+  /* ---------- mode selection ---------- */
+  document.querySelectorAll('.mode-card').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.mode-card').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    currentMode = b.dataset.mode;
+    lbScope = 'daily';
+    document.querySelectorAll('.lb-tab').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.scope==='daily')));
+    startMode(currentMode);
+    loadLeaderboard();
+  }));
+
+  document.querySelectorAll('.lb-tab').forEach(b => b.addEventListener('click', () => {
+    lbScope = b.dataset.scope;
+    document.querySelectorAll('.lb-tab').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    loadLeaderboard();
+  }));
+
+  async function loadLeaderboard() {
+    const $tbl = $('lbTable');
+    if (!currentMode) { $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Choisis un mode de jeu pour voir le classement.</td></tr></tbody>'; return; }
+    $('lbModeLabel').textContent = currentMode === 'juste_prix' ? 'Le Juste Prix' : 'Face à Face';
+    $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Chargement…</td></tr></tbody>';
+    try {
+      const { leaderboard } = await callGame('get_leaderboard', { mode: currentMode, scope: lbScope });
+      if (!leaderboard.length) { $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Personne n\'a encore joué.</td></tr></tbody>'; return; }
+      $tbl.innerHTML = '<thead><tr><th>#</th><th>Joueur</th><th style="text-align:right;">Score</th></tr></thead><tbody>' +
+        leaderboard.map(r => `<tr><td class="rk">${r.rnk}</td><td>${escapeHtml(r.pseudo)}</td><td class="sc">${fmtFull.format(r.score)}</td></tr>`).join('') + '</tbody>';
+    } catch (e) { $tbl.innerHTML = `<tbody><tr><td style="color:var(--negative);padding:16px 0;">${escapeHtml(e.message)}</td></tr></tbody>`; }
+  }
+
+  /* ---------- game flow ---------- */
+  async function startMode(mode) {
+    const $play = $('playPanel');
+    $play.hidden = false;
+    $play.innerHTML = '<p class="hint">Chargement du défi du jour…</p>';
+    try {
+      const { rounds: r, ready } = await callGame('get_challenge', { mode });
+      if (!ready || !r.length) { $play.innerHTML = '<p class="hint">Le défi du jour n\'est pas encore prêt, reviens un peu plus tard.</p>'; return; }
+      rounds = r;
+      roundStates = rounds.map(() => ({ completed: false, correct: false, points: 0 }));
+      roundIdx = 0;
+      renderRoundProgress();
+      if (mode === 'juste_prix') renderJustePrixRound(); else renderFaceARoundStart();
+    } catch (e) { $play.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  function renderRoundProgress() {
+    const dots = rounds.map((r, i) => {
+      const st = roundStates[i];
+      let cls = i === roundIdx ? 'active' : '';
+      if (st.completed) cls = st.correct ? 'done' : 'fail';
+      return `<div class="round-dot ${cls}">${i+1}</div>`;
+    }).join('');
+    const existing = $('playPanel').querySelector('.round-progress');
+    if (existing) existing.outerHTML = `<div class="round-progress">${dots}</div>`;
+  }
+
+  function nextRoundOrFinish() {
+    if (roundIdx < rounds.length - 1) {
+      roundIdx++;
+      if (currentMode === 'juste_prix') renderJustePrixRound(); else renderFaceARoundStart();
+    } else {
+      finishMode();
+    }
+  }
+
+  async function finishMode() {
+    const $play = $('playPanel');
+    try {
+      const { score, roundsCompleted } = await callGame('finalize', { idToken, mode: currentMode, date: undefined });
+      $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];return `<div class="round-dot ${st.correct?'done':'fail'}">${i+1}</div>`;}).join('')}</div>
+        <div class="score-summary">
+          <div class="big">${fmtFull.format(score)} pts</div>
+          <p>${roundsCompleted} / ${rounds.length} manches réussies aujourd'hui</p>
+          <button class="btn ghost" id="backToModes" type="button">Choisir un autre mode</button>
+        </div>`;
+      document.getElementById('backToModes').addEventListener('click', () => { $play.hidden = true; });
+      loadLeaderboard();
+    } catch (e) { $play.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  /* ---- Le Juste Prix ---- */
+  let jpTimer = null, jpDeadline = 0;
+  function renderJustePrixRound() {
+    const round = rounds[roundIdx];
+    const $play = $('playPanel');
+    $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      <div class="jp-video">
+        <div class="jp-thumb">${round.thumbnailUrl?`<img src="${round.thumbnailUrl}" alt="">`:''}</div>
+        <div class="jp-meta">
+          <h3>${escapeHtml(round.title||'')}</h3>
+          <p class="channel">${escapeHtml(round.channelTitle||'')}</p>
+          <p class="ask">Combien de ${METRIC_LABEL[round.metric]} cette vidéo a-t-elle obtenu ?</p>
+        </div>
+      </div>
+      <div class="jp-guess-row">
+        <input type="number" min="0" id="jpGuessInput" placeholder="Ta réponse">
+        <button class="btn" id="jpGuessBtn" type="button">Valider</button>
+        <span class="timer" id="jpTimer">30s</span>
+      </div>
+      <p class="jp-attempts" id="jpAttempts">6 essais restants</p>
+      <p class="jp-result" id="jpResult"></p>
+      <button class="btn ghost" id="jpNext" type="button" hidden>Manche suivante →</button>`;
+
+    $('jpGuessBtn').addEventListener('click', submitJpGuess);
+    $('jpGuessInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitJpGuess(); });
+    $('jpNext').addEventListener('click', () => { clearInterval(jpTimer); nextRoundOrFinish(); });
+
+    jpDeadline = Date.now() + ROUND_TIME_LIMIT_MS;
+    clearInterval(jpTimer);
+    jpTimer = setInterval(() => {
+      const left = Math.max(0, Math.ceil((jpDeadline - Date.now())/1000));
+      const $t = $('jpTimer');
+      if ($t) { $t.textContent = left + 's'; $t.classList.toggle('low', left <= 10); }
+      if (left <= 0) { clearInterval(jpTimer); submitJpGuess(true); }
+    }, 250);
+  }
+
+  async function submitJpGuess(isTimeout) {
+    const round = rounds[roundIdx];
+    const $input = $('jpGuessInput'), $btn = $('jpGuessBtn'), $result = $('jpResult'), $attempts = $('jpAttempts'), $next = $('jpNext');
+    const guessVal = isTimeout ? 0 : Number($input.value);
+    if (!isTimeout && (!Number.isFinite(guessVal) || $input.value === '')) return;
+    $btn.disabled = true;
+    try {
+      const res = await callGame('check_guess', { idToken, mode: 'juste_prix', roundIndex: round.round, guess: guessVal });
+      if (res.completed) {
+        clearInterval(jpTimer);
+        roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
+        renderRoundProgress();
+        $input.disabled = true; $btn.disabled = true;
+        if (res.timedOut) $result.innerHTML = `<span class="jp-result">⏱ Temps écoulé — la bonne réponse était <strong>${fmtFull.format(res.trueValue)}</strong>.</span>`;
+        else if (res.correct) $result.innerHTML = `<span class="jp-result correct">✅ Bravo, exactement ${fmtFull.format(res.trueValue)} ! +${res.points} pts</span>`;
+        else $result.innerHTML = `<span class="jp-result">❌ Essais épuisés — la bonne réponse était <strong>${fmtFull.format(res.trueValue)}</strong>.</span>`;
+        $next.hidden = false;
+      } else {
+        $attempts.textContent = `${res.attemptsLeft} essai(s) restant(s)`;
+        $result.innerHTML = res.result === 'higher' ? `<span class="jp-result higher">📈 C'est plus !</span>` : `<span class="jp-result lower">📉 C'est moins !</span>`;
+        $btn.disabled = false; $input.value = ''; $input.focus();
+      }
+    } catch (e) { $result.innerHTML = `<span class="err">${escapeHtml(e.message)}</span>`; $btn.disabled = false; }
+  }
+
+  /* ---- Face à Face ---- */
+  function renderFaceARoundStart() {
+    const round = rounds[roundIdx];
+    const $play = $('playPanel');
+    $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      <p class="ask" style="text-align:center;margin-bottom:10px;color:var(--ink-soft);font-size:0.85rem;">Laquelle a le plus de ${METRIC_LABEL[round.metric]} ?</p>
+      <div class="fa-pair" id="faPair">
+        <button class="fa-video" data-choice="A" type="button">
+          <div class="thumb">${round.videoA.thumbnailUrl?`<img src="${round.videoA.thumbnailUrl}" alt="">`:''}</div>
+          <h4>${escapeHtml(round.videoA.title||'')}</h4>
+          <p class="channel">${escapeHtml(round.videoA.channelTitle||'')}</p>
+        </button>
+        <div class="fa-vs">VS</div>
+        <button class="fa-video" data-choice="B" type="button">
+          <div class="thumb">${round.videoB.thumbnailUrl?`<img src="${round.videoB.thumbnailUrl}" alt="">`:''}</div>
+          <h4>${escapeHtml(round.videoB.title||'')}</h4>
+          <p class="channel">${escapeHtml(round.videoB.channelTitle||'')}</p>
+        </button>
+      </div>
+      <p class="jp-result" id="faResult"></p>
+      <button class="btn ghost" id="faNext" type="button" hidden>Manche suivante →</button>`;
+    $('faPair').querySelectorAll('[data-choice]').forEach(b => b.addEventListener('click', () => submitFaceChoice(b.dataset.choice)));
+    $('faNext').addEventListener('click', nextRoundOrFinish);
+  }
+
+  async function submitFaceChoice(choice) {
+    const round = rounds[roundIdx];
+    const $pair = $('faPair'), $result = $('faResult'), $next = $('faNext');
+    $pair.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const res = await callGame('check_face', { idToken, mode: 'face_a_face', roundIndex: round.round, choice });
+      roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
+      renderRoundProgress();
+      const btnA = $pair.querySelector('[data-choice="A"]'), btnB = $pair.querySelector('[data-choice="B"]');
+      btnA.classList.add(res.correctAnswer === 'A' ? 'correct' : 'wrong');
+      btnB.classList.add(res.correctAnswer === 'B' ? 'correct' : 'wrong');
+      btnA.insertAdjacentHTML('beforeend', `<div class="fa-value">${fmtCompact.format(res.valueA)}</div>`);
+      btnB.insertAdjacentHTML('beforeend', `<div class="fa-value">${fmtCompact.format(res.valueB)}</div>`);
+      $result.innerHTML = res.correct ? `<span class="jp-result correct">✅ Bien joué ! +${res.points} pts</span>` : `<span class="jp-result">❌ Raté, ce n'était pas celle-là.</span>`;
+      $next.hidden = false;
+    } catch (e) { $result.innerHTML = `<span class="err">${escapeHtml(e.message)}</span>`; }
+  }
+
+  initGsi();
+</script>
+</body>
+</html>
