@@ -37,7 +37,8 @@
     margin: 0; background: var(--bg); color: var(--ink);
     font-family: 'Source Sans 3', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 80px; }
+  .page { max-width: 1180px; margin: 0 auto; display: flex; gap: 22px; align-items: flex-start; justify-content: center; }
+  .wrap { max-width: 920px; width: 100%; margin: 0; padding: 28px 20px 80px; }
   header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
   .brand h1 {
     font-family: 'Big Shoulders Display', system-ui, sans-serif; font-weight: 800;
@@ -59,12 +60,13 @@
   .g-stats .s b { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; color: var(--accent); }
   .g-stats .s span { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
 
-  nav.tabbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  nav.tabbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; flex-wrap: wrap; }
   .tab-btn { font: inherit; font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 0.92rem;
     padding: 10px 4px; margin-right: 20px; border: none; background: transparent; color: var(--ink-faint);
-    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; text-decoration: none; display: inline-block; }
   .tab-btn:hover { color: var(--ink-soft); }
   .tab-btn[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .tab-btn.game-link { color: var(--accent); }
 
   .controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
   .regions { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -149,6 +151,28 @@
 
   footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.78rem; }
   footer a { color: var(--ink-faint); }
+
+  /* ---------- spotlight (vidéos du jour) ---------- */
+  .spotlight-rail { position: sticky; top: 20px; width: 210px; flex: none; align-self: flex-start; max-height: calc(100vh - 40px); overflow: hidden; margin-top: 28px; }
+  .spotlight-head { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); font-weight: 600; margin-bottom: 8px; }
+  .spotlight-viewport { overflow: hidden; max-height: calc(100vh - 90px); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 4%, #000 92%, transparent); }
+  .spotlight-track { display: flex; flex-direction: column; gap: 10px; animation: spotlight-scroll-y 34s linear infinite; }
+  .spotlight-rail:hover .spotlight-track { animation-play-state: paused; }
+  @keyframes spotlight-scroll-y { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+  .spotlight-card { display: block; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px; text-decoration: none; color: inherit; cursor: pointer; font: inherit; text-align: left; width: 100%; }
+  .spotlight-card:hover { border-color: var(--accent); }
+  .spotlight-card .thumb { border-radius: 6px; margin-bottom: 6px; }
+  .spotlight-card .cat { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); font-weight: 700; }
+  .spotlight-card .ttl { font-size: 0.8rem; font-weight: 600; line-height: 1.25; margin: 2px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .spotlight-card .stat { font-size: 0.68rem; color: var(--ink-faint); font-family: 'IBM Plex Mono', monospace; }
+  .spotlight-strip { display: none; overflow: hidden; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-raised); padding: 10px; }
+  .spotlight-strip-track { display: flex; gap: 10px; width: max-content; animation: spotlight-scroll-x 26s linear infinite; }
+  .spotlight-strip:hover .spotlight-strip-track { animation-play-state: paused; }
+  @keyframes spotlight-scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .spotlight-strip .spotlight-card { flex: 0 0 160px; }
+  @media (prefers-reduced-motion: reduce) { .spotlight-track, .spotlight-strip-track { animation: none; } }
+  @media (max-width: 1100px) { .spotlight-rail { display: none; } .spotlight-strip { display: block; } }
+
   @media (max-width: 640px) { .views-panel { grid-template-columns: 1fr; } }
   @media (max-width: 520px) {
     .card { grid-template-columns: 32px 84px 1fr; gap: 10px; padding: 8px; }
@@ -158,74 +182,87 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <h1>Top<span> YouTube</span></h1>
-      <p>Le classement des vidéos les plus regardées, jour après jour — par pays.</p>
-    </div>
-    <div class="updated" id="updated">chargement…</div>
-  </header>
+<div class="page">
+  <aside class="spotlight-rail" id="spotlightRail" style="display:none;">
+    <div class="spotlight-head">Vidéos du jour ✨</div>
+    <div class="spotlight-viewport"><div class="spotlight-track" id="spotlightTrack"></div></div>
+  </aside>
 
-  <div class="google-bar">
-    <div>
-      <p id="gStatus">Connecte ton compte Google pour voir combien de vidéos et créateurs du Top tu suis déjà.</p>
-      <div class="g-stats" id="gStats" style="display:none;"></div>
+  <div class="wrap">
+    <div class="spotlight-strip" id="spotlightStrip">
+      <div class="spotlight-head">Vidéos du jour ✨</div>
+      <div class="spotlight-strip-track" id="spotlightStripTrack"></div>
     </div>
-    <div id="gBtn"></div>
-  </div>
 
-  <nav class="tabbar" role="tablist" aria-label="Vue">
-    <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="true">Classement</button>
-    <button class="tab-btn" data-tab="creators" role="tab" aria-selected="false">Top créateurs</button>
-  </nav>
-
-  <div class="controls">
-    <div class="regions" id="regions" role="tablist" aria-label="Région"></div>
-    <div class="period" id="periodRanking" role="tablist" aria-label="Période">
-      <button class="period-btn" data-period="daily" aria-pressed="true">Quotidien</button>
-      <button class="period-btn" data-period="weekly" aria-pressed="false">Hebdo</button>
-      <button class="period-btn" data-period="monthly" aria-pressed="false">Mensuel</button>
-    </div>
-    <div class="period" id="periodCreators" role="tablist" aria-label="Fenêtre" style="display:none;">
-      <button class="period-btn" data-cperiod="24h" aria-pressed="true">24h</button>
-      <button class="period-btn" data-cperiod="7d" aria-pressed="false">7 jours</button>
-      <button class="period-btn" data-cperiod="28d" aria-pressed="false">28 jours</button>
-      <button class="period-btn" data-cperiod="365d" aria-pressed="false">365 jours</button>
-    </div>
-  </div>
-
-  <div id="viewRanking">
-    <div class="chiprow" id="catChips" style="display:none;"></div>
-    <div class="views-panel" id="viewsPanel" style="display:none;">
-      <div class="chart-card">
-        <div class="chart-head"><h4>Vues générées par le Top 10 · quotidien</h4><span class="cur" id="dailyCur"></span></div>
-        <div id="dailyChart"></div>
+    <header class="top">
+      <div class="brand">
+        <h1>Top<span> YouTube</span></h1>
+        <p>Le classement des vidéos les plus regardées, jour après jour — par pays.</p>
       </div>
-      <div class="chart-card">
-        <div class="chart-head"><h4>Vues générées par le Top 10 · mensuel</h4><span class="cur" id="monthlyCur"></span></div>
-        <div id="monthlyChart"></div>
+      <div class="updated" id="updated">chargement…</div>
+    </header>
+
+    <div class="google-bar">
+      <div>
+        <p id="gStatus">Connecte ton compte Google pour voir combien de vidéos et créateurs du Top tu suis déjà.</p>
+        <div class="g-stats" id="gStats" style="display:none;"></div>
+      </div>
+      <div id="gBtn"></div>
+    </div>
+
+    <nav class="tabbar" role="tablist" aria-label="Vue">
+      <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="true">Classement</button>
+      <button class="tab-btn" data-tab="creators" role="tab" aria-selected="false">Top créateurs</button>
+      <a class="tab-btn game-link" href="jeu.html">🎮 Jouer</a>
+    </nav>
+
+    <div class="controls">
+      <div class="regions" id="regions" role="tablist" aria-label="Région"></div>
+      <div class="period" id="periodRanking" role="tablist" aria-label="Période">
+        <button class="period-btn" data-period="daily" aria-pressed="true">Quotidien</button>
+        <button class="period-btn" data-period="weekly" aria-pressed="false">Hebdo</button>
+        <button class="period-btn" data-period="monthly" aria-pressed="false">Mensuel</button>
+      </div>
+      <div class="period" id="periodCreators" role="tablist" aria-label="Fenêtre" style="display:none;">
+        <button class="period-btn" data-cperiod="24h" aria-pressed="true">24h</button>
+        <button class="period-btn" data-cperiod="7d" aria-pressed="false">7 jours</button>
+        <button class="period-btn" data-cperiod="28d" aria-pressed="false">28 jours</button>
+        <button class="period-btn" data-cperiod="365d" aria-pressed="false">365 jours</button>
       </div>
     </div>
-    <ol class="board" id="board"><li class="empty"><p class="big">Chargement…</p></li></ol>
-  </div>
 
-  <div id="viewCreators" style="display:none;">
-    <div class="period" id="sortCreators" role="tablist" aria-label="Trier par" style="margin-bottom:14px;">
-      <button class="period-btn" data-sort="totalViews" aria-pressed="true">Vues cumulées</button>
-      <button class="period-btn" data-sort="videoCount" aria-pressed="false">Vidéos publiées</button>
-      <button class="period-btn" data-sort="totalLikes" aria-pressed="false">Likes</button>
-      <button class="period-btn" data-sort="totalComments" aria-pressed="false">Commentaires</button>
+    <div id="viewRanking">
+      <div class="chiprow" id="catChips" style="display:none;"></div>
+      <div class="views-panel" id="viewsPanel" style="display:none;">
+        <div class="chart-card">
+          <div class="chart-head"><h4>Vues générées par le Top 10 · quotidien</h4><span class="cur" id="dailyCur"></span></div>
+          <div id="dailyChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><h4>Vues générées par le Top 10 · mensuel</h4><span class="cur" id="monthlyCur"></span></div>
+          <div id="monthlyChart"></div>
+        </div>
+      </div>
+      <ol class="board" id="board"><li class="empty"><p class="big">Chargement…</p></li></ol>
     </div>
-    <div class="creators-scroll">
-      <table class="creators" id="creatorsTable">
-        <thead><tr><th>#</th><th>Créateur</th><th data-col="videoCount">Vidéos</th><th data-col="totalViews">Vues</th><th data-col="totalLikes">Likes</th><th data-col="totalComments">Comm.</th></tr></thead>
-        <tbody id="creatorsBody"></tbody>
-      </table>
-    </div>
-  </div>
 
-  <footer>Données · YouTube Data API v3 (chart <code>mostPopular</code>) · classement mis à jour par une collecte planifiée · <a href="https://github.com/flantechnique/top-youtube" id="repoLink" target="_blank" rel="noopener">code source</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
+    <div id="viewCreators" style="display:none;">
+      <div class="period" id="sortCreators" role="tablist" aria-label="Trier par" style="margin-bottom:14px;">
+        <button class="period-btn" data-sort="totalViews" aria-pressed="true">Vues cumulées</button>
+        <button class="period-btn" data-sort="videoCount" aria-pressed="false">Vidéos publiées</button>
+        <button class="period-btn" data-sort="totalLikes" aria-pressed="false">Likes</button>
+        <button class="period-btn" data-sort="totalComments" aria-pressed="false">Commentaires</button>
+      </div>
+      <div class="creators-scroll">
+        <table class="creators" id="creatorsTable">
+          <thead><tr><th>#</th><th>Créateur</th><th data-col="videoCount">Vidéos</th><th data-col="totalViews">Vues</th><th data-col="totalLikes">Likes</th><th data-col="totalComments">Comm.</th></tr></thead>
+          <tbody id="creatorsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>Données · YouTube Data API v3 (chart <code>mostPopular</code>) · classement mis à jour par une collecte planifiée · <a href="jeu.html">Jouer</a> · <a href="https://github.com/flantechnique/top-youtube" id="repoLink" target="_blank" rel="noopener">code source</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
@@ -271,6 +308,7 @@
   const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
   const $creatorsBody = $('creatorsBody'), $creatorsTable = $('creatorsTable');
   const $modalOverlay = $('modalOverlay'), $modal = $('modal');
+  const $spotlightRail = $('spotlightRail'), $spotlightTrack = $('spotlightTrack'), $spotlightStrip = $('spotlightStrip'), $spotlightStripTrack = $('spotlightStripTrack');
 
   const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
   const fmtFull = new Intl.NumberFormat('fr-FR');
@@ -322,13 +360,13 @@
       const b = document.createElement('button');
       b.className = 'region-btn'; b.textContent = r.label; b.setAttribute('role','tab');
       b.setAttribute('aria-pressed', String(r.code === state.region));
-      b.addEventListener('click', () => { if (state.region===r.code) return; state.region=r.code; state.activeCategories=null; state._touched=false; renderRegionTabs(); loadAll(); });
+      b.addEventListener('click', () => { if (state.region===r.code) return; state.region=r.code; state.activeCategories=null; state._touched=false; renderRegionTabs(); loadAll(); loadSpotlight(); });
       $regions.appendChild(b);
     });
   }
-  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.addEventListener('click', () => {
     state.tab = b.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(x => x.setAttribute('aria-selected', String(x===b)));
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(x => x.setAttribute('aria-selected', String(x===b)));
     $viewRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $viewCreators.style.display = state.tab==='creators' ? '' : 'none';
     $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
@@ -553,6 +591,38 @@
 
   function loadAll() { if (state.tab === 'ranking') loadRanking(); else loadCreators(); }
 
+  /* ---------- spotlight (vidéos du jour, panneau défilant) ---------- */
+  function spotlightCardHtml(v) {
+    const thumb = v.thumbnail_url ? `<img src="${v.thumbnail_url}" alt="" loading="lazy">` : '';
+    return `<button class="spotlight-card" type="button" data-video-id="${escapeHtml(v.video_id)}">
+      <div class="thumb">${thumb}</div>
+      <div class="cat">${escapeHtml(catLabel(v.category_id))}</div>
+      <div class="ttl">${escapeHtml(v.title||'')}</div>
+      <div class="stat">${fmtCompact.format(v.view_count||0)} vues · ${fmtCompact.format(v.like_count||0)} likes</div>
+    </button>`;
+  }
+  async function loadSpotlight() {
+    try {
+      const { data, error } = await sb.rpc('get_daily_spotlight', { p_region: state.region });
+      if (error) throw error;
+      const items = data || [];
+      if (!items.length) { $spotlightRail.style.display = 'none'; $spotlightStrip.style.display = 'none'; return; }
+      const cardsHtml = items.map(spotlightCardHtml).join('');
+      // dupliqué une fois pour boucler le défilement sans saut visible
+      $spotlightTrack.innerHTML = cardsHtml + cardsHtml;
+      $spotlightStripTrack.innerHTML = cardsHtml + cardsHtml;
+      $spotlightRail.style.display = '';
+      $spotlightStrip.style.display = items.length > 1 ? 'block' : 'none';
+    } catch (e) {
+      console.error(e);
+      $spotlightRail.style.display = 'none'; $spotlightStrip.style.display = 'none';
+    }
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.spotlight-card[data-video-id]');
+    if (btn) openVideoDetail(btn.dataset.videoId);
+  });
+
   /* ---------- Google sign-in: liked videos + subscriptions ---------- */
   let gToken = null;
   function initGoogle() {
@@ -619,6 +689,7 @@
   /* ---------- init ---------- */
   renderRegionTabs();
   loadAll();
+  loadSpotlight();
   window.addEventListener('load', initGoogle);
 </script>
 </body>
