@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top YouTube</title>
+<meta name="description" content="Le classement des vidéos YouTube les plus regardées, jour après jour, par pays.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --bg: #faf8f5; --bg-raised: #ffffff; --ink: #201a16; --ink-soft: #5c5148; --ink-faint: #948a80;
+    --line: #e7ded4; --accent: #e8452f; --accent-ink: #ffffff; --accent-soft: #fbe3de;
+    --gold: #c8860a; --gold-bg: #fbf0da; --chip-bg: #f1ece4; --scrim: rgba(32,26,22,0.5);
+    --positive: #2f7d4f; --negative: #c33a3a;
+    --shadow: 0 1px 2px rgba(32,26,22,0.06), 0 8px 24px -12px rgba(32,26,22,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17130f; --bg-raised: #211b16; --ink: #f3ede5; --ink-soft: #b8ac9f; --ink-faint: #7d7266;
+      --line: #332b23; --accent: #ff6a4d; --accent-ink: #1a0d08; --accent-soft: #3a2118;
+      --gold: #e5a53a; --gold-bg: #332609; --chip-bg: #2a231c; --scrim: rgba(0,0,0,0.65);
+      --positive: #4fae74; --negative: #e06262;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17130f; --bg-raised: #211b16; --ink: #f3ede5; --ink-soft: #b8ac9f; --ink-faint: #7d7266;
+    --line: #332b23; --accent: #ff6a4d; --accent-ink: #1a0d08; --accent-soft: #3a2118;
+    --gold: #e5a53a; --gold-bg: #332609; --chip-bg: #2a231c; --scrim: rgba(0,0,0,0.65);
+    --positive: #4fae74; --negative: #e06262;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Source Sans 3', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 80px; }
+  header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .brand h1 {
+    font-family: 'Big Shoulders Display', system-ui, sans-serif; font-weight: 800;
+    font-size: clamp(2.1rem, 5vw, 2.9rem); letter-spacing: 0.01em; margin: 0; line-height: 0.95; text-wrap: balance;
+  }
+  .brand h1 span { color: var(--accent); }
+  .brand p { margin: 6px 0 0; color: var(--ink-soft); font-size: 0.95rem; max-width: 46ch; }
+  .updated { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--ink-faint); white-space: nowrap; }
+  .updated b { color: var(--ink-soft); font-weight: 600; }
+
+  .google-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    background: var(--bg-raised); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 18px; }
+  .google-bar p { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
+  .google-bar strong { color: var(--ink); }
+  #gBtn { flex: none; }
+  .gsignout { font: inherit; font-size: 0.8rem; font-weight: 600; color: var(--ink-faint); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .gsignout:hover { color: var(--ink); border-color: var(--accent); }
+  .g-stats { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+  .g-stats .s b { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; color: var(--accent); }
+  .g-stats .s span { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  nav.tabbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .tab-btn { font: inherit; font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 0.92rem;
+    padding: 10px 4px; margin-right: 20px; border: none; background: transparent; color: var(--ink-faint);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--ink-soft); }
+  .tab-btn[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .regions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .region-btn { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; }
+  .region-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .region-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .period { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--bg-raised); }
+  .period-btn { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 15px; border: none; cursor: pointer;
+    background: transparent; color: var(--ink-soft); white-space: nowrap; }
+  .period-btn[aria-pressed="true"] { background: var(--chip-bg); color: var(--ink); }
+
+  .chiprow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .chiprow .label { font-size: 0.76rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 2px; }
+  .chip { font: inherit; font-size: 0.78rem; font-weight: 600; padding: 5px 11px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-faint); cursor: pointer; }
+  .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .chip.reset { border-style: dashed; color: var(--ink-faint); }
+
+  .views-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  .chart-card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 10px; }
+  .chart-card .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .chart-card h4 { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+  .chart-card .cur { font-family: 'IBM Plex Mono', monospace; font-size: 0.95rem; color: var(--accent); font-weight: 600; }
+  .chart-card svg { width: 100%; height: auto; display: block; }
+
+  ol.board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .card { display: grid; grid-template-columns: 44px 120px 1fr; gap: 14px; align-items: center; padding: 10px;
+    border-radius: 12px; background: var(--bg-raised); border: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%; font: inherit; color: inherit; }
+  .card:hover { border-color: var(--accent); }
+  .rank { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--ink-faint); text-align: center; }
+  .card.r1 .rank { color: var(--gold); font-size: 1.9rem; }
+  .card.r1 { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+  .card.r2 .rank, .card.r3 .rank { color: var(--ink-soft); }
+  .thumb { position: relative; border-radius: 8px; overflow: hidden; background: var(--chip-bg); aspect-ratio: 16/9; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge { position: absolute; top: 4px; left: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+    font-weight: 700; padding: 2px 6px; border-radius: 5px; letter-spacing: 0.03em; color: #fff; }
+  .badge-new { background: var(--accent); }
+  .badge-up { background: var(--positive); }
+  .badge-down { background: var(--negative); }
+  .liked-badge { position: absolute; bottom: 4px; right: 4px; font-size: 0.7rem; background: var(--gold); color: #1a0d08; border-radius: 5px; padding: 1px 5px; font-weight: 700; }
+  .meta { min-width: 0; }
+  .meta h3 { margin: 0 0 3px; font-size: 0.98rem; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta .channel { margin: 0 0 6px; font-size: 0.82rem; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat { font-family: 'IBM Plex Mono', monospace; font-size: 0.76rem; color: var(--ink-faint); }
+  .stat b { color: var(--ink-soft); font-weight: 600; }
+  .empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 12px; }
+  .empty .big { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.3rem; color: var(--ink); }
+
+  .creators-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-raised); }
+  table.creators { width: 100%; border-collapse: collapse; min-width: 620px; }
+  table.creators th, table.creators td { padding: 10px 12px; text-align: right; white-space: nowrap; }
+  table.creators th:first-child, table.creators td:first-child { text-align: center; width: 40px; }
+  table.creators th:nth-child(2), table.creators td:nth-child(2) { text-align: left; white-space: normal; }
+  table.creators thead th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 600; border-bottom: 1px solid var(--line); }
+  table.creators thead th button { font: inherit; background: none; border: none; color: inherit; cursor: pointer; padding: 0; }
+  table.creators thead th.active button { color: var(--accent); }
+  table.creators tbody tr { border-bottom: 1px solid var(--line); font-size: 0.88rem; }
+  table.creators tbody tr:last-child { border-bottom: none; }
+  table.creators tbody td.active { color: var(--accent); font-weight: 600; }
+  table.creators .rk { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; color: var(--ink-faint); font-size: 1.05rem; }
+  table.creators .ch { font-weight: 600; }
+  table.creators .sub-tag { display: inline-block; margin-left: 6px; font-size: 0.68rem; background: var(--gold-bg); color: var(--gold); border-radius: 4px; padding: 1px 5px; font-weight: 700; vertical-align: middle; }
+
+  .modal-overlay { position: fixed; inset: 0; background: var(--scrim); display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; z-index: 50; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg-raised); border-radius: 14px; max-width: 620px; width: 100%; box-shadow: var(--shadow); padding: 20px; border: 1px solid var(--line); }
+  .modal-close { float: right; font: inherit; font-size: 0.8rem; font-weight: 600; color: var(--ink-faint); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .modal-head { display: flex; gap: 14px; margin-bottom: 16px; }
+  .modal-thumb { width: 168px; flex: none; border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); }
+  .modal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-title-block a.yt-title { color: var(--ink); text-decoration: none; font-weight: 700; font-size: 1.05rem; line-height: 1.3; }
+  .modal-title-block a.yt-title:hover { color: var(--accent); }
+  .modal-title-block .channel { margin: 6px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+  .modal-title-block .yt-link { display: inline-flex; gap: 5px; margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+  .modal-stats { display: flex; gap: 18px; margin: 4px 0 16px; flex-wrap: wrap; }
+  .modal-stats .s b { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 1.15rem; color: var(--ink); }
+  .modal-stats .s span { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.78rem; }
+  footer a { color: var(--ink-faint); }
+  @media (max-width: 640px) { .views-panel { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) {
+    .card { grid-template-columns: 32px 84px 1fr; gap: 10px; padding: 8px; }
+    .rank { font-size: 1.25rem; } .meta h3 { font-size: 0.88rem; }
+    .modal-head { flex-direction: column; } .modal-thumb { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Top<span> YouTube</span></h1>
+      <p>Le classement des vidéos les plus regardées, jour après jour — par pays.</p>
+    </div>
+    <div class="updated" id="updated">chargement…</div>
+  </header>
+
+  <div class="google-bar">
+    <div>
+      <p id="gStatus">Connecte ton compte Google pour voir combien de vidéos et créateurs du Top tu suis déjà.</p>
+      <div class="g-stats" id="gStats" style="display:none;"></div>
+    </div>
+    <div id="gBtn"></div>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="Vue">
+    <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="true">Classement</button>
+    <button class="tab-btn" data-tab="creators" role="tab" aria-selected="false">Top créateurs</button>
+  </nav>
+
+  <div class="controls">
+    <div class="regions" id="regions" role="tablist" aria-label="Région"></div>
+    <div class="period" id="periodRanking" role="tablist" aria-label="Période">
+      <button class="period-btn" data-period="daily" aria-pressed="true">Quotidien</button>
+      <button class="period-btn" data-period="weekly" aria-pressed="false">Hebdo</button>
+      <button class="period-btn" data-period="monthly" aria-pressed="false">Mensuel</button>
+    </div>
+    <div class="period" id="periodCreators" role="tablist" aria-label="Fenêtre" style="display:none;">
+      <button class="period-btn" data-cperiod="24h" aria-pressed="true">24h</button>
+      <button class="period-btn" data-cperiod="7d" aria-pressed="false">7 jours</button>
+      <button class="period-btn" data-cperiod="28d" aria-pressed="false">28 jours</button>
+      <button class="period-btn" data-cperiod="365d" aria-pressed="false">365 jours</button>
+    </div>
+  </div>
+
+  <div id="viewRanking">
+    <div class="chiprow" id="catChips" style="display:none;"></div>
+    <div class="views-panel" id="viewsPanel" style="display:none;">
+      <div class="chart-card">
+        <div class="chart-head"><h4>Vues générées par le Top 10 · quotidien</h4><span class="cur" id="dailyCur"></span></div>
+        <div id="dailyChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h4>Vues générées par le Top 10 · mensuel</h4><span class="cur" id="monthlyCur"></span></div>
+        <div id="monthlyChart"></div>
+      </div>
+    </div>
+    <ol class="board" id="board"><li class="empty"><p class="big">Chargement…</p></li></ol>
+  </div>
+
+  <div id="viewCreators" style="display:none;">
+    <div class="period" id="sortCreators" role="tablist" aria-label="Trier par" style="margin-bottom:14px;">
+      <button class="period-btn" data-sort="totalViews" aria-pressed="true">Vues cumulées</button>
+      <button class="period-btn" data-sort="videoCount" aria-pressed="false">Vidéos publiées</button>
+      <button class="period-btn" data-sort="totalLikes" aria-pressed="false">Likes</button>
+      <button class="period-btn" data-sort="totalComments" aria-pressed="false">Commentaires</button>
+    </div>
+    <div class="creators-scroll">
+      <table class="creators" id="creatorsTable">
+        <thead><tr><th>#</th><th>Créateur</th><th data-col="videoCount">Vidéos</th><th data-col="totalViews">Vues</th><th data-col="totalLikes">Likes</th><th data-col="totalComments">Comm.</th></tr></thead>
+        <tbody id="creatorsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>Données · YouTube Data API v3 (chart <code>mostPopular</code>) · classement mis à jour par une collecte planifiée · <a href="https://github.com/erwannkervegant-art/top-youtube" id="repoLink" target="_blank" rel="noopener">code source</a></footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  /* ======= CONFIG ======= */
+  const SUPABASE_URL = 'https://nqigjixiqtaavfscqhag.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_il0mHmr3JCISQaX-QeevDg_tKOmG3E4';
+  const GOOGLE_CLIENT_ID = '709775807833-09olj4buog3tg64sq5s63u6m3a9aveni.apps.googleusercontent.com';
+  const YT_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const REGIONS = [
+    { code: 'FR', label: 'France' }, { code: 'BE', label: 'Belgique' },
+    { code: 'CH', label: 'Suisse' }, { code: 'CA', label: 'Canada' },
+  ];
+  const CATEGORY_LABELS = {
+    '1': 'Films et animation', '2': 'Autos et véhicules', '10': 'Musique', '15': 'Animaux',
+    '17': 'Sport', '18': 'Court métrage', '19': 'Voyages et événements', '20': 'Jeux vidéo',
+    '21': 'Vidéoblogs', '22': 'Vlogs et société', '23': 'Humour', '24': 'Divertissement',
+    '25': 'Actualités et politique', '26': 'Astuces et style', '27': 'Éducation',
+    '28': 'Sciences et technologies', '29': 'ONG et militantisme', '30': 'Films',
+    '31': 'Animation', '32': 'Action et aventure', '33': 'Classiques', '34': 'Comédie',
+    '35': 'Documentaire', '36': 'Drame', '37': 'Famille', '38': 'Étranger', '39': 'Horreur',
+    '40': 'Science-fiction', '41': 'Thriller', '42': 'Courts métrages', '43': 'Émissions', '44': 'Bandes-annonces',
+  };
+  const catLabel = (id) => CATEGORY_LABELS[String(id)] || (id ? `Catégorie ${id}` : 'Autre');
+  const MONTHS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const fmtMonth = (key) => { const [y,m] = String(key).split('-').map(Number); return (MONTHS_FR[m-1]||'') + ' ' + y; };
+  const fmtMonthShort = (key) => { const [y,m] = String(key).split('-').map(Number); return (MONTHS_FR[m-1]||'').slice(0,3); };
+
+  let state = { tab: 'ranking', region: 'FR', period: 'daily', creatorPeriod: '24h', creatorSort: 'totalViews', activeCategories: null, _touched: false };
+  let currentVideos = [];
+  let likedVideoIds = new Set();
+  let subscribedChannelIds = new Set();
+
+  const $ = (id) => document.getElementById(id);
+  const $regions = $('regions'), $board = $('board'), $updated = $('updated'), $catChips = $('catChips');
+  const $viewsPanel = $('viewsPanel'), $dailyChart = $('dailyChart'), $monthlyChart = $('monthlyChart'), $dailyCur = $('dailyCur'), $monthlyCur = $('monthlyCur');
+  const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
+  const $creatorsBody = $('creatorsBody'), $creatorsTable = $('creatorsTable');
+  const $modalOverlay = $('modalOverlay'), $modal = $('modal');
+
+  const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+  const fmtFull = new Intl.NumberFormat('fr-FR');
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return iso; } };
+  const fmtDay = (iso) => { try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }); } catch { return iso; } };
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ---------- chart ---------- */
+  function buildChartSVG(points, { value, xLabel, fmtY, mode = 'area' }) {
+    const W = 560, H = 150, padL = 44, padR = 12, padT = 14, padB = 26;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const n = points.length;
+    if (!n) return '<div class="empty" style="padding:24px 10px;"><p>Pas encore de données.</p></div>';
+    const vals = points.map(value);
+    let max = Math.max(...vals, 0), min = Math.min(...vals, 0);
+    if (max === min) max = min + 1;
+    const xAt = (i) => n === 1 ? padL + innerW/2 : padL + (innerW * i/(n-1));
+    const yAt = (v) => padT + innerH - ((v-min)/(max-min))*innerH;
+    const gridVals = [min, (min+max)/2, max];
+    const gridSvg = gridVals.map(gv => {
+      const y = yAt(gv);
+      return `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1" />` +
+        `<text x="${padL-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${fmtY(gv)}</text>`;
+    }).join('');
+    let dataSvg;
+    if (mode === 'bars') {
+      const bw = Math.max(4, Math.min(26, (innerW/n)*0.55));
+      dataSvg = points.map((p,i) => {
+        const x = xAt(i)-bw/2, y = yAt(value(p)), h = (padT+innerH)-y;
+        return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,h).toFixed(1)}" rx="3" fill="var(--accent)" opacity="${i===n-1?'1':'0.55'}" />`;
+      }).join('');
+    } else {
+      const linePts = points.map((p,i)=>`${xAt(i).toFixed(1)},${yAt(value(p)).toFixed(1)}`).join(' ');
+      const areaPts = `${padL},${(padT+innerH).toFixed(1)} ${linePts} ${xAt(n-1).toFixed(1)},${(padT+innerH).toFixed(1)}`;
+      const lastX = xAt(n-1), lastY = yAt(value(points[n-1]));
+      dataSvg = `<polygon points="${areaPts}" fill="var(--accent)" opacity="0.13" />` +
+        `<polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />` +
+        `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.5" fill="var(--accent)" />`;
+    }
+    const xLabelsSvg = `<text x="${xAt(0).toFixed(1)}" y="${H-8}" text-anchor="${n===1?'middle':'start'}" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[0]))}</text>` +
+      (n>1 ? `<text x="${xAt(n-1).toFixed(1)}" y="${H-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[n-1]))}</text>` : '');
+    return `<svg viewBox="0 0 ${W} ${H}" role="img">${gridSvg}${dataSvg}${xLabelsSvg}</svg>`;
+  }
+
+  /* ---------- tabs / controls ---------- */
+  function renderRegionTabs() {
+    $regions.innerHTML = '';
+    REGIONS.forEach(r => {
+      const b = document.createElement('button');
+      b.className = 'region-btn'; b.textContent = r.label; b.setAttribute('role','tab');
+      b.setAttribute('aria-pressed', String(r.code === state.region));
+      b.addEventListener('click', () => { if (state.region===r.code) return; state.region=r.code; state.activeCategories=null; state._touched=false; renderRegionTabs(); loadAll(); });
+      $regions.appendChild(b);
+    });
+  }
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+    state.tab = b.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(x => x.setAttribute('aria-selected', String(x===b)));
+    $viewRanking.style.display = state.tab==='ranking' ? '' : 'none';
+    $viewCreators.style.display = state.tab==='creators' ? '' : 'none';
+    $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
+    $periodCreators.style.display = state.tab==='creators' ? '' : 'none';
+    loadAll();
+  }));
+  $periodRanking.querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
+    state.period = b.dataset.period; state.activeCategories = null; state._touched = false;
+    $periodRanking.querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    loadRanking();
+  }));
+  $periodCreators.querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
+    state.creatorPeriod = b.dataset.cperiod;
+    $periodCreators.querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    loadCreators();
+  }));
+  document.getElementById('sortCreators').querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
+    state.creatorSort = b.dataset.sort;
+    document.getElementById('sortCreators').querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    renderCreatorsTable();
+  }));
+
+  /* ---------- status badges (rank change) ---------- */
+  function buildStatusMap(videos, prevVideos) {
+    const map = {};
+    if (!prevVideos || !prevVideos.length) return map;
+    const prevRankById = {};
+    prevVideos.forEach(pv => { if (pv.videoId) prevRankById[pv.videoId] = pv.rank; });
+    videos.forEach(v => {
+      if (!v.videoId) return;
+      const prevRank = prevRankById[v.videoId];
+      if (prevRank === undefined) { map[v.videoId] = { type: 'new' }; return; }
+      if (typeof v.rank === 'number' && typeof prevRank === 'number') {
+        if (v.rank < prevRank) map[v.videoId] = { type: 'up', delta: prevRank - v.rank };
+        else if (v.rank > prevRank) map[v.videoId] = { type: 'down', delta: v.rank - prevRank };
+      }
+    });
+    return map;
+  }
+  function badgeHtml(status) {
+    if (!status) return '';
+    if (status.type === 'new') return `<span class="badge badge-new">NOUVEAU</span>`;
+    if (status.type === 'up') return `<span class="badge badge-up">▲ ${status.delta}</span>`;
+    if (status.type === 'down') return `<span class="badge badge-down">▼ ${status.delta}</span>`;
+    return '';
+  }
+
+  /* ---------- ranking board ---------- */
+  function cardHtml(v, idx, statusMap) {
+    const rankClass = idx===0?'r1':idx===1?'r2':idx===2?'r3':'';
+    const thumb = v.thumbnailUrl ? `<img src="${v.thumbnailUrl}" alt="" loading="lazy">` : `<div class="ph">▶</div>`;
+    const status = statusMap ? statusMap[v.videoId] : null;
+    const liked = likedVideoIds.has(v.videoId) ? `<span class="liked-badge">❤</span>` : '';
+    return `<li><button class="card ${rankClass}" data-video-id="${escapeHtml(v.videoId||'')}" type="button">
+        <div class="rank">${idx+1}</div>
+        <div class="thumb">${thumb}${badgeHtml(status)}${liked}</div>
+        <div class="meta">
+          <h3>${escapeHtml(v.title||'Titre indisponible')}</h3>
+          <p class="channel">${escapeHtml(v.channelTitle||'')}${subscribedChannelIds.has(v.channelId) ? ' · abonné' : ''}</p>
+          <div class="stats">
+            <span class="stat"><b>${fmtCompact.format(v.viewCount||0)}</b> vues</span>
+            <span class="stat"><b>${fmtCompact.format(v.likeCount||0)}</b> likes</span>
+            <span class="stat"><b>${fmtCompact.format(v.commentCount||0)}</b> commentaires</span>
+          </div>
+        </div>
+      </button></li>`;
+  }
+
+  function renderCategoryChips(videos) {
+    const ids = [...new Set(videos.map(v => String(v.categoryId||'')))].filter(Boolean);
+    if (ids.length < 2) { $catChips.style.display = 'none'; return; }
+    if (!state.activeCategories) state.activeCategories = new Set(ids);
+    $catChips.style.display = 'flex';
+    const allOn = ids.every(id => state.activeCategories.has(id));
+    $catChips.innerHTML = `<span class="label">Catégories</span>` +
+      ids.map(id => `<button class="chip" data-cat="${escapeHtml(id)}" aria-pressed="${state.activeCategories.has(id)}">${escapeHtml(catLabel(id))}</button>`).join('') +
+      (allOn ? '' : `<button class="chip reset" data-catreset="1">Tout afficher</button>`);
+    $catChips.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.cat; state._touched = true;
+      if (state.activeCategories.has(id)) state.activeCategories.delete(id); else state.activeCategories.add(id);
+      if (state.activeCategories.size === 0) state.activeCategories = new Set(ids);
+      renderFromCache();
+    }));
+    const resetBtn = $catChips.querySelector('[data-catreset]');
+    if (resetBtn) resetBtn.addEventListener('click', () => { state.activeCategories = new Set(ids); state._touched = false; renderFromCache(); });
+  }
+
+  let lastCur = null, lastPrev = null;
+  function renderFromCache() { if (lastCur) renderRankingDoc(lastCur, lastPrev); }
+
+  function renderRankingDoc(cur, prev) {
+    lastCur = cur; lastPrev = prev;
+    const videos = Array.isArray(cur.videos) ? cur.videos : [];
+    currentVideos = videos;
+    if (!videos.length) {
+      $board.className = 'board';
+      $board.innerHTML = `<li class="empty"><p class="big">Pas encore de données</p><p>La première collecte n'a pas encore eu lieu pour cette période.</p></li>`;
+      $updated.textContent = '—';
+      $catChips.style.display = 'none';
+      return;
+    }
+    renderCategoryChips(videos);
+    const statusMap = buildStatusMap(videos, prev && Array.isArray(prev.videos) ? prev.videos : null);
+    const filtered = state.activeCategories ? videos.filter(v => state.activeCategories.has(String(v.categoryId||''))) : videos;
+    $board.className = 'board';
+    $board.innerHTML = filtered.length ? filtered.map((v,i)=>cardHtml(v,i,statusMap)).join('') :
+      `<li class="empty"><p class="big">Aucune vidéo</p><p>Aucune vidéo ne correspond aux catégories sélectionnées.</p></li>`;
+    const stamp = cur.collected_at || cur.period_start;
+    const periodLabel = state.period==='daily'?'Jour':state.period==='weekly'?'Semaine':'Mois';
+    let range = '';
+    if (state.period==='weekly' && cur.period_start && cur.period_end) range = ` (${fmtDay(cur.period_start)} – ${fmtDay(cur.period_end)})`;
+    if (state.period==='monthly' && cur.period_key) range = ` (${fmtMonth(cur.period_key)})`;
+    $updated.innerHTML = stamp ? `<b>${periodLabel}</b>${range} · maj ${fmtDate(stamp)}` : '';
+  }
+
+  function renderViewsPanel(data) {
+    if (!data) { $viewsPanel.style.display = 'none'; return; }
+    $viewsPanel.style.display = 'grid';
+    const daily = Array.isArray(data.daily_series) ? data.daily_series.slice(-30) : [];
+    const monthly = Array.isArray(data.monthly_series) ? data.monthly_series.slice(-12) : [];
+    $dailyChart.innerHTML = buildChartSVG(daily, { value:(p)=>p.viewsGenerated||0, xLabel:(p)=>fmtDay(p.date), fmtY:(v)=>fmtCompact.format(v), mode:'area' });
+    $monthlyChart.innerHTML = buildChartSVG(monthly, { value:(p)=>p.viewsGenerated||0, xLabel:(p)=>fmtMonthShort(p.month), fmtY:(v)=>fmtCompact.format(v), mode:'bars' });
+    $dailyCur.textContent = daily.length ? fmtCompact.format(daily[daily.length-1].viewsGenerated||0) : '';
+    $monthlyCur.textContent = monthly.length ? fmtCompact.format(monthly[monthly.length-1].viewsGenerated||0) : '';
+  }
+
+  async function loadRanking() {
+    $updated.textContent = 'chargement…';
+    try {
+      const { data, error } = await sb.from('agg_period').select('*')
+        .eq('region', state.region).eq('period_type', state.period)
+        .order('period_key', { ascending: false }).limit(2);
+      if (error) throw error;
+      if (!data || !data.length) { renderRankingDoc({ videos: [] }, null); }
+      else renderRankingDoc(data[0], data[1] || null);
+    } catch (e) { console.error(e); $updated.textContent = 'erreur de chargement'; }
+    try {
+      const { data, error } = await sb.from('agg_top10views').select('*').eq('region', state.region).maybeSingle();
+      if (error) throw error;
+      renderViewsPanel(data || null);
+    } catch (e) { console.error(e); renderViewsPanel(null); }
+  }
+
+  /* ---------- video detail modal ---------- */
+  $board.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-video-id]');
+    if (!btn || !btn.dataset.videoId) return;
+    openVideoDetail(btn.dataset.videoId);
+  });
+  async function openVideoDetail(videoId) {
+    const cached = currentVideos.find(v => v.videoId === videoId) || {};
+    renderModal(cached, null);
+    $modalOverlay.classList.add('show');
+    try {
+      const { data, error } = await sb.from('agg_video_history').select('*').eq('video_id', videoId).maybeSingle();
+      if (!error && data) renderModal(cached, data);
+    } catch (e) { console.error(e); }
+  }
+  function renderModal(cached, history) {
+    const title = (history && history.title) || cached.title || 'Titre indisponible';
+    const channel = (history && history.channel_title) || cached.channelTitle || '';
+    const thumb = (history && history.thumbnail_url) || cached.thumbnailUrl || '';
+    const videoId = (history && history.video_id) || cached.videoId || '';
+    const series = (history && Array.isArray(history.series)) ? history.series : [];
+    const last = series.length ? series[series.length-1] : null;
+    const prev = series.length > 1 ? series[series.length-2] : null;
+    const gained = last && prev ? Math.max(0, (last.viewCount||0)-(prev.viewCount||0)) : null;
+    const thumbHtml = thumb ? `<img src="${thumb}" alt="">` : '';
+    const chart = series.length
+      ? buildChartSVG(series, { value:(p)=>p.viewCount||0, xLabel:(p)=>fmtDay(p.date), fmtY:(v)=>fmtCompact.format(v), mode:'area' })
+      : '<div class="empty" style="padding:24px 10px;"><p>Historique en cours de constitution.</p></div>';
+    $modal.innerHTML = `
+      <button class="modal-close" id="modalClose" type="button">Fermer ✕</button>
+      <div class="modal-head">
+        <a class="modal-thumb" href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noopener">${thumbHtml}</a>
+        <div class="modal-title-block">
+          <a class="yt-title" href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>
+          <p class="channel">${escapeHtml(channel)}</p>
+          <a class="yt-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noopener">Voir sur YouTube →</a>
+        </div>
+      </div>
+      ${last ? `<div class="modal-stats">
+        <div class="s"><b>${fmtFull.format(last.viewCount||0)}</b><span>vues</span></div>
+        <div class="s"><b>${fmtFull.format(last.likeCount||0)}</b><span>likes</span></div>
+        <div class="s"><b>${fmtFull.format(last.commentCount||0)}</b><span>commentaires</span></div>
+        ${gained!==null?`<div class="s"><b>+${fmtCompact.format(gained)}</b><span>depuis hier</span></div>`:''}
+      </div>` : ''}
+      <div class="chart-card"><div class="chart-head"><h4>Vues cumulées par jour</h4></div>${chart}</div>`;
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+  }
+  function closeModal() { $modalOverlay.classList.remove('show'); }
+  $modalOverlay.addEventListener('click', (e) => { if (e.target === $modalOverlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  /* ---------- creators ---------- */
+  let lastCreatorsDoc = null;
+  function renderCreatorsTable() {
+    $creatorsTable.querySelectorAll('thead th[data-col]').forEach(th => th.classList.toggle('active', th.dataset.col === state.creatorSort));
+    if (!lastCreatorsDoc) { $creatorsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-faint);">Chargement…</td></tr>`; return; }
+    const creators = Array.isArray(lastCreatorsDoc.creators) ? [...lastCreatorsDoc.creators] : [];
+    if (!creators.length) { $creatorsBody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ink-faint);">Aucune donnée pour cette période.</td></tr>`; return; }
+    creators.sort((a,b) => (b[state.creatorSort]||0) - (a[state.creatorSort]||0));
+    $creatorsBody.innerHTML = creators.slice(0,50).map((c,i) => `
+      <tr>
+        <td class="rk">${i+1}</td>
+        <td><span class="ch">${escapeHtml(c.channelTitle||'Chaîne inconnue')}</span>${subscribedChannelIds.has(c.channelId)?'<span class="sub-tag">abonné</span>':''}</td>
+        <td class="${state.creatorSort==='videoCount'?'active':''}">${fmtFull.format(c.videoCount||0)}</td>
+        <td class="${state.creatorSort==='totalViews'?'active':''}">${fmtCompact.format(c.totalViews||0)}</td>
+        <td class="${state.creatorSort==='totalLikes'?'active':''}">${fmtCompact.format(c.totalLikes||0)}</td>
+        <td class="${state.creatorSort==='totalComments'?'active':''}">${fmtCompact.format(c.totalComments||0)}</td>
+      </tr>`).join('');
+  }
+  async function loadCreators() {
+    lastCreatorsDoc = null; renderCreatorsTable();
+    try {
+      const { data, error } = await sb.from('agg_creators').select('*').eq('region', state.region).eq('period', state.creatorPeriod).maybeSingle();
+      if (error) throw error;
+      lastCreatorsDoc = data || { creators: [] };
+    } catch (e) { console.error(e); lastCreatorsDoc = { creators: [] }; }
+    renderCreatorsTable();
+  }
+
+  function loadAll() { if (state.tab === 'ranking') loadRanking(); else loadCreators(); }
+
+  /* ---------- Google sign-in: liked videos + subscriptions ---------- */
+  let gToken = null;
+  function initGoogle() {
+    if (!window.google || !google.accounts || GOOGLE_CLIENT_ID.startsWith('REPLACE_')) {
+      $('gStatus').textContent = 'Connexion Google non configurée pour ce déploiement.';
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: YT_SCOPE,
+      callback: async (resp) => {
+        if (resp.error) { $('gStatus').textContent = 'Connexion refusée ou annulée.'; return; }
+        gToken = resp.access_token;
+        $('gStatus').innerHTML = 'Compte Google connecté — <button class="gsignout" id="gSignOut" type="button">se déconnecter</button>';
+        document.getElementById('gSignOut').addEventListener('click', () => { gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); $('gStats').style.display='none'; $('gStatus').textContent='Déconnecté.'; renderFromCache(); renderCreatorsTable(); });
+        await loadGoogleData();
+      },
+    });
+    $('gBtn').innerHTML = '<button class="region-btn" id="gConnect" type="button">Connecter mon compte Google</button>';
+    document.getElementById('gConnect').addEventListener('click', () => client.requestAccessToken());
+  }
+
+  async function ytApi(path, params) {
+    const url = new URL('https://www.googleapis.com/youtube/v3/' + path);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+    const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + gToken } });
+    if (!resp.ok) throw new Error('YouTube API error ' + resp.status);
+    return resp.json();
+  }
+
+  async function loadGoogleData() {
+    try {
+      const ch = await ytApi('channels', { part: 'contentDetails', mine: 'true' });
+      const likesPlaylistId = ch.items && ch.items[0] && ch.items[0].contentDetails.relatedPlaylists.likes;
+      likedVideoIds = new Set();
+      if (likesPlaylistId) {
+        let pageToken = '';
+        for (let i = 0; i < 4; i++) {
+          const resp = await ytApi('playlistItems', { part: 'contentDetails', playlistId: likesPlaylistId, maxResults: '50', pageToken });
+          (resp.items||[]).forEach(it => likedVideoIds.add(it.contentDetails.videoId));
+          if (!resp.nextPageToken) break;
+          pageToken = resp.nextPageToken;
+        }
+      }
+      subscribedChannelIds = new Set();
+      let subPageToken = '';
+      for (let i = 0; i < 4; i++) {
+        const resp = await ytApi('subscriptions', { part: 'snippet', mine: 'true', maxResults: '50', pageToken: subPageToken });
+        (resp.items||[]).forEach(it => subscribedChannelIds.add(it.snippet.resourceId.channelId));
+        if (!resp.nextPageToken) break;
+        subPageToken = resp.nextPageToken;
+      }
+      const inTopLiked = currentVideos.filter(v => likedVideoIds.has(v.videoId)).length;
+      $('gStats').style.display = 'flex';
+      $('gStats').innerHTML = `
+        <div class="s"><b>${likedVideoIds.size}</b><span>vidéos likées</span></div>
+        <div class="s"><b>${subscribedChannelIds.size}</b><span>abonnements</span></div>
+        <div class="s"><b>${inTopLiked}</b><span>vidéos du Top likées</span></div>`;
+      renderFromCache();
+      renderCreatorsTable();
+    } catch (e) { console.error(e); $('gStatus').textContent = 'Erreur lors de la récupération des données Google.'; }
+  }
+
+  /* ---------- init ---------- */
+  renderRegionTabs();
+  loadAll();
+  window.addEventListener('load', initGoogle);
+</script>
+</body>
+</html>
