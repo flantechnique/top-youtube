@@ -189,6 +189,60 @@
   .liked-card h4 { margin: 0 0 3px; font-size: 0.85rem; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .liked-card p { margin: 0; font-size: 0.76rem; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+  /* ---------- alertes ---------- */
+  .alerts-wrap { position: relative; }
+  .alerts-bell { font: inherit; font-size: 1rem; line-height: 1; padding: 7px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; position: relative; }
+  .alerts-bell:hover { border-color: var(--accent); color: var(--ink); }
+  .alerts-dot { position: absolute; top: -3px; right: -3px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 0.62rem; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; }
+  .alerts-panel { position: absolute; top: calc(100% + 8px); right: 0; width: 320px; max-width: calc(100vw - 32px); max-height: 420px; overflow-y: auto; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 8px; display: none; z-index: 40; }
+  .alerts-panel.show { display: block; }
+  .alert-row { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 8px; text-decoration: none; color: inherit; }
+  .alert-row:hover { background: var(--chip-bg); }
+  .alert-row .thumb { width: 64px; flex: none; border-radius: 6px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); }
+  .alert-row .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .alert-row .at { font-size: 0.8rem; font-weight: 600; line-height: 1.3; }
+  .alert-row .at small { display: block; font-weight: 400; color: var(--ink-faint); font-size: 0.7rem; margin-top: 2px; }
+  .alerts-empty { padding: 24px 10px; text-align: center; color: var(--ink-faint); font-size: 0.85rem; }
+
+  /* ---------- shorts / streak ---------- */
+  .shorts-tag { position: absolute; top: 4px; left: 4px; font-size: 0.62rem; font-weight: 700; background: var(--ink); color: var(--bg); border-radius: 5px; padding: 1px 5px; letter-spacing: 0.02em; }
+  .streak-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 0.72rem; font-weight: 700; color: var(--gold); margin-left: 6px; white-space: nowrap; }
+
+  /* ---------- surprends-moi ---------- */
+  .surprise-btn { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 14px; border-radius: 999px; border: 1px dashed var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+  .surprise-btn:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
+
+  /* ---------- comparateur ---------- */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .compare-col select.region-btn { margin-bottom: 12px; appearance: none; -webkit-appearance: none; }
+  .compare-mini { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; background: var(--bg-raised); border: 1px solid var(--line); margin-bottom: 8px; text-align: left; width: 100%; font: inherit; color: inherit; cursor: pointer; }
+  .compare-mini:hover { border-color: var(--accent); }
+  .compare-mini .rank { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--ink-faint); width: 22px; text-align: center; flex: none; }
+  .compare-mini .thumb { width: 78px; flex: none; border-radius: 6px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); position: relative; }
+  .compare-mini .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .compare-mini .cm-meta { min-width: 0; }
+  .compare-mini .cm-meta h4 { margin: 0 0 2px; font-size: 0.82rem; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .compare-mini .cm-meta span { font-size: 0.72rem; color: var(--ink-faint); }
+  @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- fiche chaîne ---------- */
+  .channel-link { cursor: pointer; }
+  .channel-link:hover { color: var(--accent); text-decoration: underline; }
+
+  /* ---------- rétrospective ---------- */
+  .retro-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .retro-picker select { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink); }
+  .retro-card { background: linear-gradient(155deg, var(--accent-soft), var(--bg-raised) 55%); border: 1px solid var(--line); border-radius: 18px; padding: 28px 24px; margin-bottom: 18px; }
+  .retro-card .retro-eyebrow { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 700; margin: 0 0 6px; }
+  .retro-card h2 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.7rem; margin: 0 0 18px; text-wrap: balance; }
+  .retro-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .retro-stat b { display: block; font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--ink); }
+  .retro-stat span { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+  .retro-top-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .retro-share-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .retro-share-row canvas { display: none; }
+  .retro-share-img { max-width: 320px; width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; margin-top: 14px; }
+
   @media (max-width: 640px) { .views-panel { grid-template-columns: 1fr; } }
   @media (max-width: 520px) {
     .card { grid-template-columns: 32px 84px 1fr auto; gap: 8px; padding: 8px; }
@@ -214,6 +268,10 @@
       </div>
       <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
         <div class="mini-auth">
+          <div class="alerts-wrap">
+            <button class="alerts-bell" id="alertsBell" type="button" title="Alertes" style="display:none;">🔔<span class="alerts-dot" id="alertsDot" style="display:none;">0</span></button>
+            <div class="alerts-panel" id="alertsPanel"></div>
+          </div>
           <button class="mini-auth-btn" id="miniAuthBtn" type="button">Se connecter</button>
         </div>
         <div class="updated" id="updated">chargement…</div>
@@ -223,6 +281,8 @@
     <nav class="tabbar" role="tablist" aria-label="Vue">
       <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="true">Classement</button>
       <button class="tab-btn" data-tab="creators" role="tab" aria-selected="false">Top créateurs</button>
+      <button class="tab-btn" data-tab="compare" role="tab" aria-selected="false">Comparer</button>
+      <button class="tab-btn" data-tab="retro" role="tab" aria-selected="false">Rétrospective</button>
       <button class="tab-btn" data-tab="montop" role="tab" aria-selected="false">Mon Top</button>
       <a class="tab-btn game-link" href="jeu.html">🎮 Jouer</a>
     </nav>
@@ -240,6 +300,7 @@
         <button class="period-btn" data-cperiod="28d" aria-pressed="false">28 jours</button>
         <button class="period-btn" data-cperiod="365d" aria-pressed="false">365 jours</button>
       </div>
+      <button class="surprise-btn" id="surpriseBtn" type="button">🎲 Surprends-moi</button>
     </div>
 
     <div id="viewRanking">
@@ -297,6 +358,27 @@
       </div>
     </div>
 
+    <div id="viewCompare" style="display:none;">
+      <div class="compare-grid">
+        <div class="compare-col">
+          <select class="region-btn" id="compareRegionA"></select>
+          <div id="compareBoardA"></div>
+        </div>
+        <div class="compare-col">
+          <select class="region-btn" id="compareRegionB"></select>
+          <div id="compareBoardB"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewRetro" style="display:none;">
+      <div class="retro-picker">
+        <select id="retroScope"><option value="month">Rétrospective mensuelle</option><option value="year">Rétrospective annuelle</option></select>
+        <select id="retroKey"></select>
+      </div>
+      <div id="retroContent"><p style="color:var(--ink-faint);">Chargement…</p></div>
+    </div>
+
     <footer>Données · YouTube Data API v3 (chart <code>mostPopular</code>) · classement mis à jour par une collecte planifiée · <a href="jeu.html">Jouer</a> · <a href="https://github.com/flantechnique/top-youtube" id="repoLink" target="_blank" rel="noopener">code source</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
   </div>
 </div>
@@ -310,9 +392,17 @@
   const SUPABASE_URL = 'https://nqigjixiqtaavfscqhag.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_il0mHmr3JCISQaX-QeevDg_tKOmG3E4';
   const GOOGLE_CLIENT_ID = '709775807833-09olj4buog3tg64sq5s63u6m3a9aveni.apps.googleusercontent.com';
-  const YT_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
+  const YT_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly openid';
+  const GAME_FN_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/game';
+  const THUMB_PROXY_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/thumb-proxy';
 
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  constsb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  async function callGame(action, payload) {
+    const resp = await fetch(GAME_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || 'Erreur serveur');
+    return data;
+  }
 
   const REGIONS = [
     { code: 'FR', label: 'France' }, { code: 'BE', label: 'Belgique' },
@@ -333,26 +423,31 @@
   const fmtMonth = (key) => { const [y,m] = String(key).split('-').map(Number); return (MONTHS_FR[m-1]||'') + ' ' + y; };
   const fmtMonthShort = (key) => { const [y,m] = String(key).split('-').map(Number); return (MONTHS_FR[m-1]||'').slice(0,3); };
 
-  let state = { tab: 'ranking', region: 'FR', period: 'daily', creatorPeriod: '24h', creatorSort: 'totalViews', activeCategories: null, _touched: false };
+  let state = { tab: 'ranking', region: 'FR', period: 'daily', creatorPeriod: '24h', creatorSort: 'totalViews', activeCategories: null, _touched: false, compareA: 'FR', compareB: 'BE' };
   let currentVideos = [];
   let likedVideoIds = new Set();
   let likedVideosDetails = [];
   let subscribedChannelIds = new Set();
+  let subscribedChannelsDetails = [];
 
   const $ = (id) => document.getElementById(id);
   const $regions = $('regions'), $board = $('board'), $updated = $('updated'), $catChips = $('catChips');
   const $viewsPanel = $('viewsPanel'), $dailyChart = $('dailyChart'), $monthlyChart = $('monthlyChart'), $dailyCur = $('dailyCur'), $monthlyCur = $('monthlyCur');
   const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $viewMonTop = $('viewMonTop'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
+  const $viewCompare = $('viewCompare'), $viewRetro = $('viewRetro');
   const $creatorsBody = $('creatorsBody'), $creatorsTable = $('creatorsTable');
   const $modalOverlay = $('modalOverlay'), $modal = $('modal');
   const $spotlightRail = $('spotlightRail'), $spotlightTrack = $('spotlightTrack');
   const $miniAuthBtn = $('miniAuthBtn'), $likedGrid = $('likedGrid'), $subChannelsBody = $('subChannelsBody');
+  const $alertsBell = $('alertsBell'), $alertsDot = $('alertsDot'), $alertsPanel = $('alertsPanel');
+  const $surpriseBtn = $('surpriseBtn');
 
   const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
   const fmtFull = new Intl.NumberFormat('fr-FR');
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return iso; } };
   const fmtDay = (iso) => { try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }); } catch { return iso; } };
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
   /* ---------- chart ---------- */
   function buildChartSVG(points, { value, xLabel, fmtY, mode = 'area' }) {
     const W = 560, H = 150, padL = 44, padR = 12, padT = 14, padB = 26;
@@ -383,12 +478,12 @@
       const lastX = xAt(n-1), lastY = yAt(value(points[n-1]));
       dataSvg = `<polygon points="${areaPts}" fill="var(--accent)" opacity="0.13" />` +
         `<polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />` +
-        `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.5" fill="var(--accent)" />`;
-    }
+        `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.5" fill="var(--accent)" />`; }
     const xLabelsSvg = `<text x="${xAt(0).toFixed(1)}" y="${H-8}" text-anchor="${n===1?'middle':'start'}" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[0]))}</text>` +
       (n>1 ? `<text x="${xAt(n-1).toFixed(1)}" y="${H-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[n-1]))}</text>` : '');
     return `<svg viewBox="0 0 ${W} ${H}" role="img">${gridSvg}${dataSvg}${xLabelsSvg}</svg>`;
   }
+
   /* ---------- tabs / controls ---------- */
   function renderRegionTabs() {
     $regions.innerHTML = '';
@@ -406,8 +501,11 @@
     $viewRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $viewCreators.style.display = state.tab==='creators' ? '' : 'none';
     $viewMonTop.style.display = state.tab==='montop' ? '' : 'none';
+    $viewCompare.style.display = state.tab==='compare' ? '' : 'none';
+    $viewRetro.style.display = state.tab==='retro' ? '' : 'none';
     $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $periodCreators.style.display = (state.tab==='creators' || state.tab==='montop') ? '' : 'none';
+    $surpriseBtn.style.display = state.tab==='ranking' ? '' : 'none';
     loadAll();
   }));
   $miniAuthBtn.addEventListener('click', () => document.querySelector('.tab-btn[data-tab="montop"]').click());
@@ -426,6 +524,7 @@
     document.getElementById('sortCreators').querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
     renderCreatorsTable();
   }));
+
   /* ---------- status badges (rank change) ---------- */
   function buildStatusMap(videos, prevVideos) {
     const map = {};
@@ -457,12 +556,15 @@
     const thumb = v.thumbnailUrl ? `<img src="${v.thumbnailUrl}" alt="" loading="lazy">` : `<div class="ph">▶</div>`;
     const status = statusMap ? statusMap[v.videoId] : null;
     const liked = likedVideoIds.has(v.videoId) ? `<span class="liked-badge">❤</span>` : '';
+    const isShort = v.isShort || v.is_short;
+    const shortsTag = isShort ? `<span class="shorts-tag">SHORT</span>` : '';
+    const streakSlot = idx===0 ? `<span id="streakTag"></span>` : '';
     return `<li><button class="card ${rankClass}" data-video-id="${escapeHtml(v.videoId||'')}" type="button">
         <div class="rank">${idx+1}</div>
-        <div class="thumb">${thumb}${liked}</div>
+        <div class="thumb">${thumb}${shortsTag}${liked}</div>
         <div class="meta">
-          <h3>${escapeHtml(v.title||'Titre indisponible')}</h3>
-          <p class="channel">${escapeHtml(v.channelTitle||'')}${subscribedChannelIds.has(v.channelId) ? ' · abonné' : ''}</p>
+          <h3>${escapeHtml(v.title||'Titre indisponible')}${streakSlot}</h3>
+          <p class="channel"><span class="channel-link" data-channel-id="${escapeHtml(v.channelId||'')}" data-channel-name="${escapeHtml(v.channelTitle||'')}">${escapeHtml(v.channelTitle||'')}</span>${subscribedChannelIds.has(v.channelId) ? ' · abonné' : ''}</p>
           <div class="stats">
             <span class="stat"><b>${fmtCompact.format(v.viewCount||0)}</b> vues</span>
             <span class="stat"><b>${fmtCompact.format(v.likeCount||0)}</b> likes</span>
@@ -472,6 +574,7 @@
         <div class="rank-change">${badgeHtml(status)}</div>
       </button></li>`;
   }
+
   function renderCategoryChips(videos) {
     const ids = [...new Set(videos.map(v => String(v.categoryId||'')))].filter(Boolean);
     if (ids.length < 2) { $catChips.style.display = 'none'; return; }
@@ -511,6 +614,7 @@
     $board.className = 'board';
     $board.innerHTML = filtered.length ? filtered.map((v,i)=>cardHtml(v,i,statusMap)).join('') :
       `<li class="empty"><p class="big">Aucune vidéo</p><p>Aucune vidéo ne correspond aux catégories sélectionnées.</p></li>`;
+    if (state.period === 'daily' && filtered.length && filtered[0].videoId === videos[0].videoId) computeAndShowStreak(videos[0].videoId);
     const stamp = cur.collected_at || cur.period_start;
     const periodLabel = state.period==='daily'?'Jour':state.period==='weekly'?'Semaine':'Mois';
     let range = '';
@@ -518,6 +622,7 @@
     if (state.period==='monthly' && cur.period_key) range = ` (${fmtMonth(cur.period_key)})`;
     $updated.innerHTML = stamp ? `<b>${periodLabel}</b>${range} · maj ${fmtDate(stamp)}` : '';
   }
+
   function renderViewsPanel(data) {
     if (!data) { $viewsPanel.style.display = 'none'; return; }
     $viewsPanel.style.display = 'grid';
@@ -545,8 +650,77 @@
       renderViewsPanel(data || null);
     } catch (e) { console.error(e); renderViewsPanel(null); }
   }
+
+  /* ---------- streak (jours consécutifs à la #1) ---------- */
+  async function computeAndShowStreak(videoId) {
+    const $tag = document.getElementById('streakTag');
+    if (!$tag) return;
+    try {
+      const { data, error } = await sb.from('agg_period').select('period_key, videos')
+        .eq('region', state.region).eq('period_type', 'daily')
+        .order('period_key', { ascending: false }).limit(14);
+      if (error || !data) return;
+      let streak = 0;
+      for (const doc of data) {
+        const top = Array.isArray(doc.videos) && doc.videos.length ? doc.videos[0] : null;
+        if (top && top.videoId === videoId) streak++; else break;
+      }
+      if (streak >= 2) $tag.outerHTML = `<span class="streak-tag" title="Vidéo n°1 depuis ${streak} jours">🔥 ${streak}j en tête</span>`;
+    } catch (e) { console.error(e); }
+  }
+
+  /* ---------- fiche chaîne ---------- */
+  async function openChannelDetail(channelId, channelName) {
+    if (!channelId) return;
+    $modal.innerHTML = `<button class="modal-close" id="modalClose" type="button">Fermer ✕</button><p style="padding:20px 0;color:var(--ink-faint);">Chargement de la fiche « ${escapeHtml(channelName||'')} »…</p>`;
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    $modalOverlay.classList.add('show');
+    try {
+      const { data, error } = await sb.rpc('get_channel_history', { p_channel_id: channelId, p_days: 120 });
+      if (error) throw error;
+      renderChannelModal(channelId, channelName, data || {});
+    } catch (e) {
+      console.error(e);
+      $modal.innerHTML = `<button class="modal-close" id="modalClose" type="button">Fermer ✕</button><p style="padding:20px 0;color:var(--negative);">Erreur lors du chargement de la fiche chaîne.</p>`;
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+    }
+  }
+  function renderChannelModal(channelId, channelName, data) {
+    const title = data.channelTitle || channelName || 'Chaîne inconnue';
+    const series = Array.isArray(data.series) ? data.series : [];
+    const videos = Array.isArray(data.videos) ? data.videos : [];
+    const chart = series.length
+      ? buildChartSVG(series, { value:(p)=>p.totalViews||0, xLabel:(p)=>fmtDay(p.date), fmtY:(v)=>fmtCompact.format(v), mode:'area' })
+      : '<div class="empty" style="padding:24px 10px;"><p>Pas assez d\'historique pour cette chaîne.</p></div>';
+    const totalViews = series.reduce((s,p)=>s+(p.totalViews||0),0);
+    const videosHtml = videos.slice(0,12).map(v => `
+      <a class="liked-card" href="https://www.youtube.com/watch?v=${encodeURIComponent(v.videoId)}" target="_blank" rel="noopener">
+        <div class="thumb">${v.thumbnailUrl?`<img src="${v.thumbnailUrl}" alt="" loading="lazy">`:''}</div>
+        <div class="lc-meta"><h4>${escapeHtml(v.title||'')}</h4><p>${fmtCompact.format(v.viewCount||0)} vues</p></div>
+      </a>`).join('');
+    $modal.innerHTML = `
+      <button class="modal-close" id="modalClose" type="button">Fermer ✕</button>
+      <div class="modal-title-block" style="margin-bottom:14px;">
+        <h3 style="margin:0 0 4px;font-size:1.15rem;">${escapeHtml(title)}</h3>
+        <p class="channel">${subscribedChannelIds.has(channelId) ? 'Tu es abonné à cette chaîne' : ''}</p>
+      </div>
+      <div class="modal-stats">
+        <div class="s"><b>${fmtFull.format(totalViews)}</b><span>vues cumulées (120j)</span></div>
+        <div class="s"><b>${videos.length}</b><span>vidéos suivies dans le Top</span></div>
+      </div>
+      <div class="chart-card"><div class="chart-head"><h4>Vues générées par jour</h4></div>${chart}</div>
+      <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:1.05rem;margin:18px 0 10px;">Vidéos de la chaîne dans le Top</h2>
+      <div class="liked-grid">${videosHtml || '<div class="montop-empty">Aucune vidéo récente de cette chaîne dans le Top.</div>'}</div>`;
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+  }
+  document.addEventListener('click', (e) => {
+    const chLink = e.target.closest('[data-channel-id]');
+    if (chLink && chLink.dataset.channelId) { e.stopPropagation(); openChannelDetail(chLink.dataset.channelId, chLink.dataset.channelName); }
+  }, true);
+
   /* ---------- video detail modal ---------- */
   $board.addEventListener('click', (e) => {
+    if (e.target.closest('[data-channel-id]')) return;
     const btn = e.target.closest('[data-video-id]');
     if (!btn || !btn.dataset.videoId) return;
     openVideoDetail(btn.dataset.videoId);
@@ -595,6 +769,7 @@
   function closeModal() { $modalOverlay.classList.remove('show'); }
   $modalOverlay.addEventListener('click', (e) => { if (e.target === $modalOverlay) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
   /* ---------- creators ---------- */
   let lastCreatorsDoc = null;
   function renderCreatorsTable() {
@@ -606,7 +781,7 @@
     $creatorsBody.innerHTML = creators.slice(0,50).map((c,i) => `
       <tr>
         <td class="rk">${i+1}</td>
-        <td><span class="ch">${escapeHtml(c.channelTitle||'Chaîne inconnue')}</span>${subscribedChannelIds.has(c.channelId)?'<span class="sub-tag">abonné</span>':''}</td>
+        <td><span class="ch channel-link" data-channel-id="${escapeHtml(c.channelId||'')}" data-channel-name="${escapeHtml(c.channelTitle||'')}">${escapeHtml(c.channelTitle||'Chaîne inconnue')}</span>${subscribedChannelIds.has(c.channelId)?'<span class="sub-tag">abonné</span>':''}</td>
         <td class="${state.creatorSort==='videoCount'?'active':''}">${fmtFull.format(c.videoCount||0)}</td>
         <td class="${state.creatorSort==='totalViews'?'active':''}">${fmtCompact.format(c.totalViews||0)}</td>
         <td class="${state.creatorSort==='totalLikes'?'active':''}">${fmtCompact.format(c.totalLikes||0)}</td>
@@ -626,8 +801,176 @@
   function loadAll() {
     if (state.tab === 'ranking') loadRanking();
     else if (state.tab === 'creators') loadCreators();
+    else if (state.tab === 'compare') loadCompare();
+    else if (state.tab === 'retro') loadRetro();
     else renderMonTop();
   }
+
+  /* ---------- comparateur de régions ---------- */
+  function compareMiniHtml(v, i) {
+    const isShort = v.isShort || v.is_short;
+    return `<button class="compare-mini" type="button" data-video-id="${escapeHtml(v.videoId||'')}">
+      <div class="rank">${i+1}</div>
+      <div class="thumb">${v.thumbnailUrl?`<img src="${v.thumbnailUrl}" alt="" loading="lazy">`:''}${isShort?'<span class="shorts-tag">SHORT</span>':''}</div>
+      <div class="cm-meta"><h4>${escapeHtml(v.title||'')}</h4><span>${escapeHtml(v.channelTitle||'')} · ${fmtCompact.format(v.viewCount||0)} vues</span></div>
+    </button>`;
+  }
+  async function loadCompareRegion(regionCode, $target) {
+    $target.innerHTML = '<p style="color:var(--ink-faint);padding:10px 0;">Chargement…</p>';
+    try {
+      const { data, error } = await sb.from('agg_period').select('videos').eq('region', regionCode).eq('period_type', 'daily').order('period_key', { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      const videos = (data && Array.isArray(data.videos)) ? data.videos.slice(0, 10) : [];
+      $target.innerHTML = videos.length ? videos.map(compareMiniHtml).join('') : '<p style="color:var(--ink-faint);padding:10px 0;">Pas encore de données pour cette région.</p>';
+    } catch (e) { console.error(e); $target.innerHTML = '<p style="color:var(--negative);padding:10px 0;">Erreur de chargement.</p>'; }
+  }
+  function loadCompare() {
+    const $a = $('compareRegionA'), $b = $('compareRegionB');
+    if (!$a.options.length) {
+      REGIONS.forEach(r => { $a.add(new Option(r.label, r.code)); $b.add(new Option(r.label, r.code)); });
+      $a.value = state.compareA; $b.value = state.compareB;
+      $a.addEventListener('change', () => { state.compareA = $a.value; loadCompareRegion(state.compareA, $('compareBoardA')); });
+      $b.addEventListener('change', () => { state.compareB = $b.value; loadCompareRegion(state.compareB, $('compareBoardB')); });
+      $('compareBoardA').addEventListener('click', (e) => { const b = e.target.closest('[data-video-id]'); if (b) openVideoDetail(b.dataset.videoId); });
+      $('compareBoardB').addEventListener('click', (e) => { const b = e.target.closest('[data-video-id]'); if (b) openVideoDetail(b.dataset.videoId); });
+    }
+    loadCompareRegion(state.compareA, $('compareBoardA'));
+    loadCompareRegion(state.compareB, $('compareBoardB'));
+  }
+
+  /* ---------- rétrospective ---------- */
+  function populateRetroKeys() {
+    const $scope = $('retroScope'), $key = $('retroKey');
+    const scope = $scope.value;
+    $key.innerHTML = '';
+    const now = new Date();
+    if (scope === 'month') {
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        $key.add(new Option(fmtMonth(key), key));
+      }
+    } else {
+      for (let i = 0; i < 4; i++) $key.add(new Option(String(now.getFullYear() - i), String(now.getFullYear() - i)));
+    }
+  }
+  async function loadRetro() {
+    const $scope = $('retroScope'), $key = $('retroKey'), $content = $('retroContent');
+    if (!$scope.dataset.bound) {
+      $scope.dataset.bound = '1';
+      populateRetroKeys();
+      $scope.addEventListener('change', () => { populateRetroKeys(); loadRetro(); });
+      $key.addEventListener('change', loadRetro);
+    }
+    $content.innerHTML = '<p style="color:var(--ink-faint);">Chargement…</p>';
+    try {
+      const { data, error } = await sb.rpc('get_retrospective', { p_region: state.region, p_scope: $scope.value, p_key: $key.value });
+      if (error) throw error;
+      renderRetro(data || {}, $scope.value);
+    } catch (e) { console.error(e); $content.innerHTML = '<p style="color:var(--negative);">Erreur lors du chargement de la rétrospective.</p>'; }
+  }
+  function renderRetro(data, scope) {
+    const $content = $('retroContent');
+    const topVideos = Array.isArray(data.topVideos) ? data.topVideos.slice(0, 5) : [];
+    const label = scope === 'month' ? (data.key ? fmtMonth(data.key) : '') : data.key;
+    const regionLabel = (REGIONS.find(r => r.code === state.region) || {}).label || state.region;
+    if (!topVideos.length) { $content.innerHTML = `<div class="empty"><p class="big">Pas encore assez de données</p><p>Reviens un peu plus tard pour la rétrospective de cette période.</p></div>`; return; }
+    const topCreator = data.topCreator || {};
+    $content.innerHTML = `
+      <div class="retro-card" id="retroCard">
+        <p class="retro-eyebrow">Rétrospective ${scope === 'month' ? 'mensuelle' : 'annuelle'} · ${escapeHtml(regionLabel)}</p>
+        <h2>${escapeHtml(label||'')}</h2>
+        <div class="retro-stats">
+          <div class="retro-stat"><b>${fmtCompact.format(data.viewsGenerated||0)}</b><span>vues générées par le Top 10</span></div>
+          <div class="retro-stat"><b>${escapeHtml(topCreator.channelTitle||'—')}</b><span>créateur dominant</span></div>
+          <div class="retro-stat"><b>${topVideos.length}</b><span>vidéos vedettes</span></div>
+        </div>
+        <div class="retro-top-list">
+          ${topVideos.map((v,i) => `<div class="compare-mini" style="cursor:default;">
+              <div class="rank">${i+1}</div>
+              <div class="thumb">${v.thumbnailUrl?`<img src="${v.thumbnailUrl}" alt="">`:''}</div>
+              <div class="cm-meta"><h4>${escapeHtml(v.title||'')}</h4><span>${escapeHtml(v.channelTitle||'')} · ${fmtCompact.format(v.viewCount||0)} vues</span></div>
+            </div>`).join('')}
+        </div>
+        <div class="retro-share-row">
+          <button class="surprise-btn" id="retroShareBtn" type="button">🖼️ Générer un visuel à partager</button>
+          <canvas id="retroCanvas" width="1080" height="1350"></canvas>
+        </div>
+        <div id="retroShareOut"></div>
+      </div>`;
+    document.getElementById('retroShareBtn').addEventListener('click', () => generateRetroImage(data, scope, label, regionLabel));
+  }
+  async function loadThumbForCanvas(url) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = THUMB_PROXY_URL + '?url=' + encodeURIComponent(url);
+    });
+  }
+  async function generateRetroImage(data, scope, label, regionLabel) {
+    const $btn = document.getElementById('retroShareBtn');
+    $btn.disabled = true; $btn.textContent = 'Génération…';
+    try {
+      const canvas = document.getElementById('retroCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#e8452f'); grad.addColorStop(1, '#201a16');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 34px sans-serif'; ctx.fillText(('Rétrospective ' + (scope==='month'?'mensuelle':'annuelle')).toUpperCase(), 60, 100);
+      ctx.font = '800 62px sans-serif'; ctx.fillText(label || '', 60, 175);
+      ctx.font = '400 28px sans-serif'; ctx.fillText(regionLabel, 60, 215);
+      ctx.font = '400 26px sans-serif';
+      ctx.fillText(fmtCompact.format(data.viewsGenerated||0) + ' vues générées par le Top 10', 60, 280);
+      const topVideos = (data.topVideos||[]).slice(0,5);
+      let y = 340;
+      for (let i = 0; i < topVideos.length; i++) {
+        const v = topVideos[i];
+        const img = v.thumbnailUrl ? await loadThumbForCanvas(v.thumbnailUrl) : null;
+        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(60, y, W-120, 170);
+        if (img) ctx.drawImage(img, 76, y+16, 260, 138);
+        ctx.fillStyle = '#fff'; ctx.font = '700 30px sans-serif'; ctx.fillText('#' + (i+1), 356, y+55);
+        ctx.font = '600 26px sans-serif';
+        wrapText(ctx, v.title || '', 356, y+90, W-460, 32, 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '400 22px sans-serif';
+        ctx.fillText(fmtCompact.format(v.viewCount||0) + ' vues', 356, y+150);
+        y += 190;
+      }
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '400 22px sans-serif';
+      ctx.fillText('topyoutube.fr', 60, H-40);
+      const dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('retroShareOut').innerHTML = `<img class="retro-share-img" src="${dataUrl}" alt="Visuel de la rétrospective">
+        <p class="hint" style="color:var(--ink-faint);font-size:0.8rem;margin-top:8px;">Fais un clic droit (ou appui long) sur l'image pour l'enregistrer et la partager.</p>`;
+    } catch (e) { console.error(e); document.getElementById('retroShareOut').innerHTML = `<p style="color:var(--negative);">Erreur lors de la génération du visuel.</p>`; }
+    $btn.disabled = false; $btn.textContent = '🖼️ Générer un visuel à partager';
+  }
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+    const words = String(text).split(' ');
+    let line = '', lines = 0;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+        ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; lines++;
+        if (lines >= maxLines - 1) { ctx.fillText(words.slice(n+1).join(' '), x, y); return; }
+      } else line = testLine;
+    }
+    ctx.fillText(line, x, y);
+  }
+
+  /* ---------- surprends-moi ---------- */
+  $surpriseBtn.addEventListener('click', async () => {
+    $surpriseBtn.disabled = true; $surpriseBtn.textContent = '🎲 …';
+    try {
+      const { data, error } = await sb.rpc('get_random_video_of_day', { p_region: state.region });
+      if (error) throw error;
+      if (data && data.video_id) openVideoDetail(data.video_id);
+    } catch (e) { console.error(e); }
+    $surpriseBtn.disabled = false; $surpriseBtn.textContent = '🎲 Surprends-moi';
+  });
+
   /* ---------- Mon Top ---------- */
   async function renderMonTop() {
     if (!gToken) { $('monTopContent').style.display = 'none'; return; }
@@ -644,9 +987,10 @@
     const creators = (lastCreatorsDoc && Array.isArray(lastCreatorsDoc.creators)) ? lastCreatorsDoc.creators : [];
     const subInTop = creators.filter(c => subscribedChannelIds.has(c.channelId)).sort((a,b) => (b.totalViews||0)-(a.totalViews||0));
     $subChannelsBody.innerHTML = subInTop.length
-      ? subInTop.map((c,i) => `<tr><td class="rk">${i+1}</td><td>${escapeHtml(c.channelTitle||'Chaîne inconnue')}</td><td>${fmtFull.format(c.videoCount||0)}</td><td>${fmtCompact.format(c.totalViews||0)}</td></tr>`).join('')
+      ? subInTop.map((c,i) => `<tr><td class="rk">${i+1}</td><td><span class="channel-link" data-channel-id="${escapeHtml(c.channelId||'')}" data-channel-name="${escapeHtml(c.channelTitle||'')}">${escapeHtml(c.channelTitle||'Chaîne inconnue')}</span></td><td>${fmtFull.format(c.videoCount||0)}</td><td>${fmtCompact.format(c.totalViews||0)}</td></tr>`).join('')
       : `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-faint);">Aucune de tes chaînes abonnées n'apparaît dans le Top pour cette région / fenêtre.</td></tr>`;
   }
+
   /* ---------- spotlight (vidéos du jour, panneau défilant) ---------- */
   function spotlightCardHtml(v) {
     const thumb = v.thumbnail_url ? `<img src="${v.thumbnail_url}" alt="" loading="lazy">` : '';
@@ -676,6 +1020,7 @@
     const btn = e.target.closest('.spotlight-card[data-video-id]');
     if (btn) openVideoDetail(btn.dataset.videoId);
   });
+
   /* ---------- Google sign-in: liked videos + subscriptions ---------- */
   let gToken = null;
   function initGoogle() {
@@ -691,10 +1036,11 @@
         gToken = resp.access_token;
         $('gStatus').innerHTML = 'Compte Google connecté — <button class="gsignout" id="gSignOut" type="button">se déconnecter</button>';
         document.getElementById('gSignOut').addEventListener('click', () => {
-          gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); likedVideosDetails = [];
+          gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); likedVideosDetails = []; subscribedChannelsDetails = [];
           $('gStats').style.display='none'; $('gStatus').textContent='Déconnecté.';
           $miniAuthBtn.textContent = 'Se connecter'; $miniAuthBtn.classList.remove('connected');
           $('monTopContent').style.display = 'none';
+          $alertsBell.style.display = 'none'; $alertsPanel.classList.remove('show'); $alertsDot.style.display = 'none'; currentAlerts = [];
           renderFromCache(); renderCreatorsTable();
         });
         await loadGoogleData();
@@ -711,6 +1057,7 @@
     if (!resp.ok) throw new Error('YouTube API error ' + resp.status);
     return resp.json();
   }
+
   async function loadGoogleData() {
     try {
       const ch = await ytApi('channels', { part: 'contentDetails', mine: 'true' });
@@ -736,10 +1083,15 @@
         }
       }
       subscribedChannelIds = new Set();
+      subscribedChannelsDetails = [];
       let subPageToken = '';
       for (let i = 0; i < 4; i++) {
         const resp = await ytApi('subscriptions', { part: 'snippet', mine: 'true', maxResults: '50', pageToken: subPageToken });
-        (resp.items||[]).forEach(it => subscribedChannelIds.add(it.snippet.resourceId.channelId));
+        (resp.items||[]).forEach(it => {
+          const cid = it.snippet.resourceId.channelId;
+          subscribedChannelIds.add(cid);
+          subscribedChannelsDetails.push({ id: cid, title: it.snippet.title });
+        });
         if (!resp.nextPageToken) break;
         subPageToken = resp.nextPageToken;
       }
@@ -754,8 +1106,57 @@
       renderFromCache();
       renderCreatorsTable();
       renderMonTop();
+      syncWatchedItems();
     } catch (e) { console.error(e); $('gStatus').textContent = 'Erreur lors de la récupération des données Google.'; }
   }
+
+  /* ---------- alertes : synchronise les vidéos/chaînes suivies, puis affiche les alertes ---------- */
+  async function syncWatchedItems() {
+    if (!gToken) return;
+    try {
+      await callGame('sync_watched', {
+        accessToken: gToken,
+        videos: likedVideosDetails.map(v => ({ id: v.videoId, title: v.title, thumbnailUrl: v.thumbnailUrl })),
+        channels: subscribedChannelsDetails,
+      });
+      $alertsBell.style.display = '';
+      loadAlerts();
+    } catch (e) { console.error(e); }
+  }
+  let currentAlerts = [];
+  async function loadAlerts() {
+    if (!gToken) return;
+    try {
+      const { alerts } = await callGame('get_alerts', { accessToken: gToken });
+      currentAlerts = alerts || [];
+      const unseen = currentAlerts.filter(a => !a.seen);
+      $alertsDot.style.display = unseen.length ? 'flex' : 'none';
+      $alertsDot.textContent = String(unseen.length);
+      renderAlertsPanel();
+    } catch (e) { console.error(e); }
+  }
+  function renderAlertsPanel() {
+    $alertsPanel.innerHTML = currentAlerts.length ? currentAlerts.map(a => {
+      const href = a.item_type === 'video' ? `https://www.youtube.com/watch?v=${encodeURIComponent(a.item_id)}` : `https://www.youtube.com/channel/${encodeURIComponent(a.item_id)}`;
+      const label = a.item_type === 'video' ? 'a rejoint le Top' + (a.rank ? ` (#${a.rank})` : '') : 'a une vidéo dans le Top' + (a.rank ? ` (#${a.rank})` : '');
+      return `<a class="alert-row" href="${href}" target="_blank" rel="noopener">
+        <div class="thumb">${a.thumbnail_url?`<img src="${a.thumbnail_url}" alt="" loading="lazy">`:''}</div>
+        <div class="at">${escapeHtml(a.item_title||'')}<small>${escapeHtml(label)} · ${escapeHtml(a.region||'')}</small></div>
+      </a>`;
+    }).join('') : '<div class="alerts-empty">Aucune alerte pour l’instant. On te prévient dès qu’une vidéo likée ou une chaîne suivie entre dans le Top.</div>';
+  }
+  $alertsBell.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const show = !$alertsPanel.classList.contains('show');
+    $alertsPanel.classList.toggle('show', show);
+    if (show && currentAlerts.some(a => !a.seen)) {
+      const ids = currentAlerts.filter(a => !a.seen).map(a => a.id);
+      try { await callGame('mark_alerts_seen', { accessToken: gToken, ids }); } catch (err) { console.error(err); }
+      $alertsDot.style.display = 'none';
+      currentAlerts.forEach(a => a.seen = true);
+    }
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.alerts-wrap')) $alertsPanel.classList.remove('show'); });
 
   /* ---------- init ---------- */
   renderRegionTabs();
