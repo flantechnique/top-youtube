@@ -397,11 +397,23 @@
   const THUMB_PROXY_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/thumb-proxy';
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const SESSION_KEY = 'tyt_session_token';
+  function getSessionToken() { try { return localStorage.getItem(SESSION_KEY) || null; } catch { return null; } }
+  function setSessionToken(t) { try { if (t) localStorage.setItem(SESSION_KEY, t); else localStorage.removeItem(SESSION_KEY); } catch {} }
   async function callGame(action, payload) {
-    const resp = await fetch(GAME_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
+    const body = { action, ...payload };
+    const st = getSessionToken();
+    if (st && !body.sessionToken) body.sessionToken = st;
+    const resp = await fetch(GAME_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Erreur serveur');
     return data;
+  }
+  async function establishSession(accessToken) {
+    try {
+      const { sessionToken } = await callGame('establish_session', { accessToken });
+      if (sessionToken) setSessionToken(sessionToken);
+    } catch (e) { console.error(e); }
   }
 
   const REGIONS = [
@@ -478,7 +490,8 @@
       const lastX = xAt(n-1), lastY = yAt(value(points[n-1]));
       dataSvg = `<polygon points="${areaPts}" fill="var(--accent)" opacity="0.13" />` +
         `<polyline points="${linePts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />` +
-        `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.5" fill="var(--accent)" />`; }
+        `<circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="3.5" fill="var(--accent)" />`;
+    }
     const xLabelsSvg = `<text x="${xAt(0).toFixed(1)}" y="${H-8}" text-anchor="${n===1?'middle':'start'}" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[0]))}</text>` +
       (n>1 ? `<text x="${xAt(n-1).toFixed(1)}" y="${H-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[n-1]))}</text>` : '');
     return `<svg viewBox="0 0 ${W} ${H}" role="img">${gridSvg}${dataSvg}${xLabelsSvg}</svg>`;
@@ -506,6 +519,7 @@
     $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $periodCreators.style.display = (state.tab==='creators' || state.tab==='montop') ? '' : 'none';
     $surpriseBtn.style.display = state.tab==='ranking' ? '' : 'none';
+    $regions.style.display = state.tab==='compare' ? 'none' : '';
     loadAll();
   }));
   $miniAuthBtn.addEventListener('click', () => document.querySelector('.tab-btn[data-tab="montop"]').click());
@@ -862,43 +876,58 @@
       $scope.addEventListener('change', () => { populateRetroKeys(); loadRetro(); });
       $key.addEventListener('change', loadRetro);
     }
+    if (!gToken) {
+      $content.innerHTML = `<div class="empty"><p class="big">Connecte-toi pour voir ta rétrospective</p><p>Ta rétrospective personnelle croise tes vidéos likées et tes chaînes suivies avec le Top de la période choisie.</p><button class="region-btn" id="retroConnectBtn" type="button" style="margin-top:12px;">Connecter mon compte Google</button></div>`;
+      const $rcb = document.getElementById('retroConnectBtn');
+      if ($rcb) $rcb.addEventListener('click', () => document.getElementById('gConnect')?.click());
+      return;
+    }
     $content.innerHTML = '<p style="color:var(--ink-faint);">Chargement…</p>';
     try {
-      const { data, error } = await sb.rpc('get_retrospective', { p_region: state.region, p_scope: $scope.value, p_key: $key.value });
+      const { data, error } = await sb.rpc('get_personal_retrospective', {
+        p_video_ids: Array.from(likedVideoIds), p_channel_ids: Array.from(subscribedChannelIds),
+        p_region: state.region, p_scope: $scope.value, p_key: $key.value,
+      });
       if (error) throw error;
       renderRetro(data || {}, $scope.value);
     } catch (e) { console.error(e); $content.innerHTML = '<p style="color:var(--negative);">Erreur lors du chargement de la rétrospective.</p>'; }
   }
   function renderRetro(data, scope) {
     const $content = $('retroContent');
-    const topVideos = Array.isArray(data.topVideos) ? data.topVideos.slice(0, 5) : [];
+    const liked = Array.isArray(data.likedInTop) ? data.likedInTop : [];
+    const channels = Array.isArray(data.channelsInTop) ? data.channelsInTop : [];
     const label = scope === 'month' ? (data.key ? fmtMonth(data.key) : '') : data.key;
     const regionLabel = (REGIONS.find(r => r.code === state.region) || {}).label || state.region;
-    if (!topVideos.length) { $content.innerHTML = `<div class="empty"><p class="big">Pas encore assez de données</p><p>Reviens un peu plus tard pour la rétrospective de cette période.</p></div>`; return; }
-    const topCreator = data.topCreator || {};
+    if (!liked.length && !channels.length) {
+      $content.innerHTML = `<div class="empty"><p class="big">Rien à afficher pour cette période</p><p>Aucune de tes vidéos likées ni de tes chaînes suivies n'est apparue dans le Top ${escapeHtml(regionLabel)} pendant cette période.</p></div>`;
+      return;
+    }
+    const topLiked = liked.slice(0, 5);
+    const topChannel = channels[0] || {};
     $content.innerHTML = `
       <div class="retro-card" id="retroCard">
-        <p class="retro-eyebrow">Rétrospective ${scope === 'month' ? 'mensuelle' : 'annuelle'} · ${escapeHtml(regionLabel)}</p>
+        <p class="retro-eyebrow">Ta rétrospective ${scope === 'month' ? 'mensuelle' : 'annuelle'} · ${escapeHtml(regionLabel)}</p>
         <h2>${escapeHtml(label||'')}</h2>
         <div class="retro-stats">
-          <div class="retro-stat"><b>${fmtCompact.format(data.viewsGenerated||0)}</b><span>vues générées par le Top 10</span></div>
-          <div class="retro-stat"><b>${escapeHtml(topCreator.channelTitle||'—')}</b><span>créateur dominant</span></div>
-          <div class="retro-stat"><b>${topVideos.length}</b><span>vidéos vedettes</span></div>
+          <div class="retro-stat"><b>${liked.length}</b><span>de tes vidéos likées dans le Top</span></div>
+          <div class="retro-stat"><b>${channels.length}</b><span>chaînes suivies dans le Top</span></div>
+          <div class="retro-stat"><b>${fmtCompact.format(data.viewsGenerated||0)}</b><span>vues cumulées de tes vidéos likées</span></div>
         </div>
-        <div class="retro-top-list">
-          ${topVideos.map((v,i) => `<div class="compare-mini" style="cursor:default;">
+        ${topLiked.length ? `<div class="retro-top-list">
+          ${topLiked.map((v,i) => `<div class="compare-mini" style="cursor:default;">
               <div class="rank">${i+1}</div>
               <div class="thumb">${v.thumbnailUrl?`<img src="${v.thumbnailUrl}" alt="">`:''}</div>
-              <div class="cm-meta"><h4>${escapeHtml(v.title||'')}</h4><span>${escapeHtml(v.channelTitle||'')} · ${fmtCompact.format(v.viewCount||0)} vues</span></div>
+              <div class="cm-meta"><h4>${escapeHtml(v.title||'')}</h4><span>${escapeHtml(v.channelTitle||'')} · meilleur rang #${v.bestRank||'?'} · ${fmtCompact.format(v.viewCount||0)} vues</span></div>
             </div>`).join('')}
-        </div>
+        </div>` : ''}
+        ${topChannel.channelTitle ? `<p style="color:var(--ink-soft);font-size:0.85rem;margin:0 0 14px;">Ta chaîne suivie la plus vue dans le Top : <strong style="color:var(--ink);">${escapeHtml(topChannel.channelTitle)}</strong> (${fmtCompact.format(topChannel.totalViews||0)} vues cumulées)</p>` : ''}
         <div class="retro-share-row">
           <button class="surprise-btn" id="retroShareBtn" type="button">🖼️ Générer un visuel à partager</button>
           <canvas id="retroCanvas" width="1080" height="1350"></canvas>
         </div>
         <div id="retroShareOut"></div>
       </div>`;
-    document.getElementById('retroShareBtn').addEventListener('click', () => generateRetroImage(data, scope, label, regionLabel));
+    document.getElementById('retroShareBtn').addEventListener('click', () => generateRetroImage(data, scope, label, regionLabel, topLiked));
   }
   async function loadThumbForCanvas(url) {
     return new Promise((resolve) => {
@@ -909,7 +938,7 @@
       img.src = THUMB_PROXY_URL + '?url=' + encodeURIComponent(url);
     });
   }
-  async function generateRetroImage(data, scope, label, regionLabel) {
+  async function generateRetroImage(data, scope, label, regionLabel, topLiked) {
     const $btn = document.getElementById('retroShareBtn');
     $btn.disabled = true; $btn.textContent = 'Génération…';
     try {
@@ -920,19 +949,19 @@
       grad.addColorStop(0, '#e8452f'); grad.addColorStop(1, '#201a16');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#fff';
-      ctx.font = '700 34px sans-serif'; ctx.fillText(('Rétrospective ' + (scope==='month'?'mensuelle':'annuelle')).toUpperCase(), 60, 100);
+      ctx.font = '700 34px sans-serif'; ctx.fillText(('Ma rétrospective ' + (scope==='month'?'mensuelle':'annuelle')).toUpperCase(), 60, 100);
       ctx.font = '800 62px sans-serif'; ctx.fillText(label || '', 60, 175);
       ctx.font = '400 28px sans-serif'; ctx.fillText(regionLabel, 60, 215);
       ctx.font = '400 26px sans-serif';
-      ctx.fillText(fmtCompact.format(data.viewsGenerated||0) + ' vues générées par le Top 10', 60, 280);
-      const topVideos = (data.topVideos||[]).slice(0,5);
+      ctx.fillText(fmtCompact.format(data.viewsGenerated||0) + ' vues cumulées de mes vidéos likées', 60, 280);
+      const items = (topLiked||[]).slice(0,5);
       let y = 340;
-      for (let i = 0; i < topVideos.length; i++) {
-        const v = topVideos[i];
+      for (let i = 0; i < items.length; i++) {
+        const v = items[i];
         const img = v.thumbnailUrl ? await loadThumbForCanvas(v.thumbnailUrl) : null;
         ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(60, y, W-120, 170);
         if (img) ctx.drawImage(img, 76, y+16, 260, 138);
-        ctx.fillStyle = '#fff'; ctx.font = '700 30px sans-serif'; ctx.fillText('#' + (i+1), 356, y+55);
+        ctx.fillStyle = '#fff'; ctx.font = '700 30px sans-serif'; ctx.fillText('#' + (v.bestRank||i+1), 356, y+55);
         ctx.font = '600 26px sans-serif';
         wrapText(ctx, v.title || '', 356, y+90, W-460, 32, 2);
         ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '400 22px sans-serif';
@@ -942,8 +971,36 @@
       ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '400 22px sans-serif';
       ctx.fillText('topyoutube.fr', 60, H-40);
       const dataUrl = canvas.toDataURL('image/png');
+      const shareText = scope === 'month'
+        ? 'Mon top du mois est pas mal non ? venez faire le votre ici : https://topyoutube.fr'
+        : "Mon top de l'année est pas mal non ? venez faire le votre ici : https://topyoutube.fr";
       document.getElementById('retroShareOut').innerHTML = `<img class="retro-share-img" src="${dataUrl}" alt="Visuel de la rétrospective">
-        <p class="hint" style="color:var(--ink-faint);font-size:0.8rem;margin-top:8px;">Fais un clic droit (ou appui long) sur l'image pour l'enregistrer et la partager.</p>`;
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="surprise-btn" id="retroShareNativeBtn" type="button">📤 Partager</button>
+          <a class="surprise-btn" id="retroDownloadBtn" href="${dataUrl}" download="retrospective-topyoutube.png" style="text-decoration:none;">💾 Télécharger</a>
+          <button class="surprise-btn" id="retroCopyBtn" type="button">🔗 Copier le message</button>
+        </div>
+        <p class="hint" style="color:var(--ink-faint);font-size:0.8rem;margin-top:8px;">« ${escapeHtml(shareText)} »</p>`;
+      const $native = document.getElementById('retroShareNativeBtn');
+      $native.addEventListener('click', async () => {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], 'retrospective-topyoutube.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], text: shareText, title: 'Top YouTube' });
+          } else if (navigator.share) {
+            await navigator.share({ text: shareText, url: 'https://topyoutube.fr' });
+          } else {
+            await navigator.clipboard.writeText(shareText);
+            $native.textContent = '✓ Message copié'; setTimeout(() => $native.textContent = '📤 Partager', 1800);
+          }
+        } catch (e) { if (e.name !== 'AbortError') console.error(e); }
+      });
+      document.getElementById('retroCopyBtn').addEventListener('click', async () => {
+        const $cb = document.getElementById('retroCopyBtn');
+        try { await navigator.clipboard.writeText(shareText); $cb.textContent = '✓ Copié'; setTimeout(() => $cb.textContent = '🔗 Copier le message', 1800); }
+        catch (e) { console.error(e); }
+      });
     } catch (e) { console.error(e); document.getElementById('retroShareOut').innerHTML = `<p style="color:var(--negative);">Erreur lors de la génération du visuel.</p>`; }
     $btn.disabled = false; $btn.textContent = '🖼️ Générer un visuel à partager';
   }
@@ -1032,22 +1089,44 @@
       client_id: GOOGLE_CLIENT_ID,
       scope: YT_SCOPE,
       callback: async (resp) => {
-        if (resp.error) { $('gStatus').textContent = 'Connexion refusée ou annulée.'; return; }
+        if (resp.error) {
+          if (getSessionToken()) {
+            $('gStatus').innerHTML = 'Connecté (scores, alertes) — <button class="gsignout" id="gReconnect" type="button">reconnecter Google pour Mon Top &amp; rétrospective</button>';
+            const $rb = document.getElementById('gReconnect');
+            if ($rb) $rb.addEventListener('click', () => client.requestAccessToken());
+          } else {
+            $('gStatus').textContent = 'Connexion refusée ou annulée.';
+          }
+          return;
+        }
         gToken = resp.access_token;
+        await establishSession(gToken);
         $('gStatus').innerHTML = 'Compte Google connecté — <button class="gsignout" id="gSignOut" type="button">se déconnecter</button>';
         document.getElementById('gSignOut').addEventListener('click', () => {
           gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); likedVideosDetails = []; subscribedChannelsDetails = [];
+          setSessionToken(null);
           $('gStats').style.display='none'; $('gStatus').textContent='Déconnecté.';
           $miniAuthBtn.textContent = 'Se connecter'; $miniAuthBtn.classList.remove('connected');
           $('monTopContent').style.display = 'none';
           $alertsBell.style.display = 'none'; $alertsPanel.classList.remove('show'); $alertsDot.style.display = 'none'; currentAlerts = [];
           renderFromCache(); renderCreatorsTable();
+          if (state.tab === 'retro') loadRetro();
         });
         await loadGoogleData();
       },
     });
     $('gBtn').innerHTML = '<button class="region-btn" id="gConnect" type="button">Connecter mon compte Google</button>';
     document.getElementById('gConnect').addEventListener('click', () => client.requestAccessToken());
+
+    // Session restaurée (même appareil) : UI « connecté » immédiate + renouvellement silencieux du jeton Google en arrière-plan,
+    // pour éviter d'avoir à se reconnecter à chaque visite.
+    if (getSessionToken()) {
+      $miniAuthBtn.textContent = '✓ Connecté'; $miniAuthBtn.classList.add('connected');
+      $('gStatus').textContent = 'Session restaurée — actualisation en arrière-plan…';
+      $alertsBell.style.display = '';
+      loadAlerts();
+      try { client.requestAccessToken({ prompt: '' }); } catch (e) { console.error(e); }
+    }
   }
 
   async function ytApi(path, params) {
@@ -1125,9 +1204,9 @@
   }
   let currentAlerts = [];
   async function loadAlerts() {
-    if (!gToken) return;
+    if (!gToken && !getSessionToken()) return;
     try {
-      const { alerts } = await callGame('get_alerts', { accessToken: gToken });
+      const { alerts } = await callGame('get_alerts', { accessToken: gToken || undefined });
       currentAlerts = alerts || [];
       const unseen = currentAlerts.filter(a => !a.seen);
       $alertsDot.style.display = unseen.length ? 'flex' : 'none';
@@ -1151,7 +1230,7 @@
     $alertsPanel.classList.toggle('show', show);
     if (show && currentAlerts.some(a => !a.seen)) {
       const ids = currentAlerts.filter(a => !a.seen).map(a => a.id);
-      try { await callGame('mark_alerts_seen', { accessToken: gToken, ids }); } catch (err) { console.error(err); }
+      try { await callGame('mark_alerts_seen', { accessToken: gToken || undefined, ids }); } catch (err) { console.error(err); }
       $alertsDot.style.display = 'none';
       currentAlerts.forEach(a => a.seen = true);
     }
