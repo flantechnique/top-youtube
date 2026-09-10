@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Top YouTube</title>
 <meta name="description" content="Le classement des vidéos YouTube les plus regardées, jour après jour, par pays.">
+<link rel="canonical" href="https://topyoutube.fr/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317130f'/%3E%3Cpath d='M24 18 L46 32 L24 46 Z' fill='%23ff6a4d'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317130f'/%3E%3Cpath d='M24 18 L46 32 L24 46 Z' fill='%23ff6a4d'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Top YouTube">
+<meta property="og:title" content="Top YouTube — le classement des vidéos les plus regardées">
+<meta property="og:description" content="Le classement des vidéos YouTube les plus regardées, jour après jour, par pays. Comparateur de régions, rétrospective personnelle, et un jeu pour tester tes stats.">
+<meta property="og:url" content="https://topyoutube.fr">
+<meta property="og:image" content="https://nqigjixiqtaavfscqhag.supabase.co/storage/v1/object/public/site-assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Top YouTube — le classement des vidéos les plus regardées">
+<meta name="twitter:description" content="Le classement des vidéos YouTube les plus regardées, jour après jour, par pays.">
+<meta name="twitter:image" content="https://nqigjixiqtaavfscqhag.supabase.co/storage/v1/object/public/site-assets/og-image.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Top YouTube","url":"https://topyoutube.fr","description":"Le classement des vidéos YouTube les plus regardées, jour après jour, par pays.","inLanguage":"fr"}</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
@@ -396,6 +413,25 @@
   const GAME_FN_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/game';
   const THUMB_PROXY_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/thumb-proxy';
 
+  // Mini-analytics maison (aucun cookie, aucun identifiant persistant : un id aléatoire par onglet, en mémoire de session seulement).
+  const __tytSid = (function () {
+    try {
+      let s = sessionStorage.getItem('tyt_an_sid');
+      if (!s) { s = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('tyt_an_sid', s); }
+      return s;
+    } catch { return null; }
+  })();
+  window.__tytTrack = function (page, region) {
+    try {
+      fetch(SUPABASE_URL + '/rest/v1/page_views', {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ page, region: region || null, referrer: (document.referrer || '').slice(0, 500), session_id: __tytSid }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (e) {}
+  };
+
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const SESSION_KEY = 'tyt_session_token';
   function getSessionToken() { try { return localStorage.getItem(SESSION_KEY) || null; } catch { return null; } }
@@ -521,6 +557,7 @@
     $surpriseBtn.style.display = state.tab==='ranking' ? '' : 'none';
     $regions.style.display = state.tab==='compare' ? 'none' : '';
     loadAll();
+    window.__tytTrack && window.__tytTrack(state.tab, state.region);
   }));
   $miniAuthBtn.addEventListener('click', () => document.querySelector('.tab-btn[data-tab="montop"]').click());
   $periodRanking.querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
@@ -1241,6 +1278,7 @@
   renderRegionTabs();
   loadAll();
   loadSpotlight();
+  window.__tytTrack && window.__tytTrack(state.tab, state.region);
   window.addEventListener('load', initGoogle);
 </script>
 </body>
