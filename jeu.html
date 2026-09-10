@@ -210,6 +210,10 @@
           <p>La miniature se dévoile petit à petit : devine la bonne vidéo parmi 4 propositions, en 3 essais maxi.</p>
         </button>
       </div>
+      <div id="archiveSection" hidden>
+        <button class="btn ghost small" id="archiveToggle" type="button">🗓️ Jouer une édition passée</button>
+        <div id="archiveList" hidden style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
     </div>
 
     <div class="panel" id="playPanel" hidden></div>
@@ -282,16 +286,29 @@
   let lbScope = 'daily';
   let predictRegion = 'FR';
   let predictPicked = null;
+  let currentPracticeToken = null; // manche d'entraînement en cours (questions aléatoires, hors classement)
+  let currentChallengeDate = null; // date de l'édition jouée quand ce n'est pas celle du jour (archive)
+
+  const SESSION_KEY = 'tyt_session_token';
+  function getSessionToken() { try { return localStorage.getItem(SESSION_KEY) || null; } catch { return null; } }
+  function setSessionToken(t) { try { if (t) localStorage.setItem(SESSION_KEY, t); else localStorage.removeItem(SESSION_KEY); } catch {} }
 
   async function callGame(action, payload) {
+    const body = { action, ...payload };
+    const st = getSessionToken();
+    if (st && !body.sessionToken) body.sessionToken = st;
     const resp = await fetch(GAME_FN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...payload }),
+      body: JSON.stringify(body),
     });
     const data = await resp.json();
     if (!resp.ok || data.error) throw new Error(data.error || 'Erreur serveur');
     return data;
+  }
+  async function establishSession(tok) {
+    try { const { sessionToken } = await callGame('establish_session', { idToken: tok }); if (sessionToken) setSessionToken(sessionToken); }
+    catch (e) { console.error(e); }
   }
 
   function handleCredentialResponse(response) {
@@ -311,7 +328,7 @@
     $('authStatus').textContent = 'Vérification…';
     try {
       const { pseudo: p } = await callGame('get_pseudo', { idToken });
-      if (p) { pseudo = p; showGame(); }
+      if (p) { pseudo = p; await establishSession(idToken); showGame(); }
       else { $('pseudoForm').hidden = false; $('authStatus').textContent = 'Connecté — choisis un pseudo pour jouer.'; }
     } catch (e) {
       idToken = null; sessionStorage.removeItem('tyt_id_token');
@@ -324,9 +341,27 @@
     $('authErr').hidden = true;
     try {
       const { pseudo: p } = await callGame('set_pseudo', { idToken, pseudo: val });
-      pseudo = p; showGame();
+      pseudo = p;
+      await establishSession(idToken || undefined);
+      showGame();
     } catch (e) { $('authErr').hidden = false; $('authErr').textContent = e.message; }
   });
+
+  // Reconnexion automatique : si une session persistante existe déjà (même appareil, venant de ce site
+  // ou du classement principal), on entre directement dans le jeu sans repasser par Google.
+  async function boot() {
+    if (getSessionToken()) {
+      try {
+        const { pseudo: p } = await callGame('get_pseudo', {});
+        if (p) { pseudo = p; showGame(); initGsi(); return; }
+        $('pseudoForm').hidden = false;
+        $('authStatus').textContent = 'Session restaurée — choisis un pseudo pour jouer.';
+        initGsi();
+        return;
+      } catch (e) { setSessionToken(null); }
+    }
+    initGsi();
+  }
 
   $('changePseudo').addEventListener('click', () => {
     $('gameArea').hidden = true; $('authPanel').hidden = false;
@@ -352,7 +387,39 @@
     document.querySelectorAll('.lb-tab').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.scope==='daily')));
     startMode(currentMode);
     loadLeaderboard();
+    loadArchiveDates(currentMode);
   }));
+
+  const $archiveToggleBtn = document.getElementById('archiveToggle');
+  if ($archiveToggleBtn) $archiveToggleBtn.addEventListener('click', () => { $('archiveList').hidden = !$('archiveList').hidden; });
+
+  function fmtArchiveDate(iso) {
+    try { return new Date(iso + 'T00:00:00').toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }); }
+    catch { return iso; }
+  }
+
+  async function loadArchiveDates(mode) {
+    const $sec = $('archiveSection'), $list = $('archiveList');
+    $sec.hidden = false;
+    $list.hidden = true;
+    $list.innerHTML = '<p class="hint">Chargement…</p>';
+    try {
+      const { dates } = await callGame('get_archive_dates', { mode });
+      $list.innerHTML = (dates && dates.length)
+        ? dates.slice(0, 30).map(d => `<button class="btn ghost small" type="button" data-archive-date="${escapeHtml(d)}">${escapeHtml(fmtArchiveDate(d))}</button>`).join('')
+        : '<p class="hint">Pas encore d\'édition archivée pour ce mode.</p>';
+      $list.querySelectorAll('[data-archive-date]').forEach(b => b.addEventListener('click', () => {
+        startMode(mode, b.dataset.archiveDate);
+        $list.hidden = true;
+      }));
+    } catch (e) { $list.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  function modeBannerHtml() {
+    if (currentPracticeToken) return `<p class="hint" style="margin-bottom:10px;">🔁 Manche d'entraînement — questions générées aléatoirement, score non classé.</p>`;
+    if (currentChallengeDate) return `<p class="hint" style="margin-bottom:10px;">🗓️ Archive du ${escapeHtml(fmtArchiveDate(currentChallengeDate))} — ton score compte pour le classement de ce jour-là.</p>`;
+    return '';
+  }
 
   document.querySelectorAll('.lb-tab').forEach(b => b.addEventListener('click', () => {
     lbScope = b.dataset.scope;
@@ -374,13 +441,38 @@
   }
 
   /* ---------- game flow ---------- */
-  async function startMode(mode) {
+  async function startMode(mode, dateOverride) {
     const $play = $('playPanel');
     $play.hidden = false;
-    $play.innerHTML = '<p class="hint">Chargement du défi du jour…</p>';
+    currentPracticeToken = null;
+    currentChallengeDate = dateOverride || null;
+    $play.innerHTML = dateOverride ? '<p class="hint">Chargement de l\'édition archivée…</p>' : '<p class="hint">Chargement du défi du jour…</p>';
     try {
-      const { rounds: r, ready } = await callGame('get_challenge', { mode });
-      if (!ready || !r.length) { $play.innerHTML = '<p class="hint">Le défi du jour n\'est pas encore prêt, reviens un peu plus tard.</p>'; return; }
+      const payload = { mode };
+      if (dateOverride) payload.date = dateOverride;
+      const { rounds: r, ready, date } = await callGame('get_challenge', payload);
+      if (!ready || !r.length) { $play.innerHTML = '<p class="hint">Ce défi n\'est pas encore prêt, reviens un peu plus tard.</p>'; return; }
+      if (!currentChallengeDate) currentChallengeDate = date || null;
+      rounds = r;
+      roundStates = rounds.map(() => ({ completed: false, correct: false, points: 0 }));
+      roundIdx = 0;
+      renderRoundProgress();
+      if (mode === 'juste_prix') renderJustePrixRound();
+      else if (mode === 'face_a_face') renderFaceARoundStart();
+      else renderPhotoRound();
+    } catch (e) { $play.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  async function startPractice(mode) {
+    const $play = $('playPanel');
+    $play.hidden = false;
+    currentPracticeToken = null;
+    currentChallengeDate = null;
+    $play.innerHTML = '<p class="hint">Génération de nouvelles questions…</p>';
+    try {
+      const { rounds: r, ready, practiceToken } = await callGame('get_challenge', { mode, practice: true });
+      if (!ready || !r.length) { $play.innerHTML = '<p class="hint">Pas assez de vidéos récentes pour générer une manche d\'entraînement, réessaie plus tard.</p>'; return; }
+      currentPracticeToken = practiceToken;
       rounds = r;
       roundStates = rounds.map(() => ({ completed: false, correct: false, points: 0 }));
       roundIdx = 0;
@@ -415,16 +507,28 @@
 
   async function finishMode() {
     const $play = $('playPanel');
+    const modeAtFinish = currentMode, practiceTokenAtFinish = currentPracticeToken, dateAtFinish = currentChallengeDate;
     try {
-      const { score, roundsCompleted } = await callGame('finalize', { idToken, mode: currentMode, date: undefined });
+      const { score, roundsCompleted } = await callGame('finalize', {
+        idToken, mode: currentMode,
+        date: dateAtFinish || undefined,
+        practiceToken: practiceTokenAtFinish || undefined,
+      });
+      const practiceNote = practiceTokenAtFinish ? `<p class="hint">Manche d'entraînement — ce score n'apparaît pas au classement.</p>` : '';
+      const roundsLabel = practiceTokenAtFinish ? 'manches réussies' : (dateAtFinish ? `manches réussies pour l'édition du ${escapeHtml(fmtArchiveDate(dateAtFinish))}` : "manches réussies aujourd'hui");
       $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];return `<div class="round-dot ${st.correct?'done':'fail'}">${i+1}</div>`;}).join('')}</div>
         <div class="score-summary">
           <div class="big">${fmtFull.format(score)} pts</div>
-          <p>${roundsCompleted} / ${rounds.length} manches réussies aujourd'hui</p>
-          <button class="btn ghost" id="backToModes" type="button">Choisir un autre mode</button>
+          <p>${roundsCompleted} / ${rounds.length} ${roundsLabel}</p>
+          ${practiceNote}
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;">
+            <button class="btn" id="playAgainBtn" type="button">🔁 Rejouer avec de nouvelles questions</button>
+            <button class="btn ghost" id="backToModes" type="button">Choisir un autre mode</button>
+          </div>
         </div>`;
       document.getElementById('backToModes').addEventListener('click', () => { $play.hidden = true; });
-      loadLeaderboard();
+      document.getElementById('playAgainBtn').addEventListener('click', () => startPractice(modeAtFinish));
+      if (!practiceTokenAtFinish) loadLeaderboard();
     } catch (e) { $play.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
   }
 
@@ -434,6 +538,7 @@
     const round = rounds[roundIdx];
     const $play = $('playPanel');
     $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      ${modeBannerHtml()}
       <div class="jp-video">
         <div class="jp-thumb">${round.thumbnailUrl?`<img src="${round.thumbnailUrl}" alt="">`:''}</div>
         <div class="jp-meta">
@@ -472,7 +577,7 @@
     if (!isTimeout && (!Number.isFinite(guessVal) || $input.value === '')) return;
     $btn.disabled = true;
     try {
-      const res = await callGame('check_guess', { idToken, mode: 'juste_prix', roundIndex: round.round, guess: guessVal });
+      const res = await callGame('check_guess', { idToken, mode: 'juste_prix', roundIndex: round.round, guess: guessVal, practiceToken: currentPracticeToken || undefined, date: currentChallengeDate || undefined });
       if (res.completed) {
         clearInterval(jpTimer);
         roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
@@ -495,6 +600,7 @@
     const round = rounds[roundIdx];
     const $play = $('playPanel');
     $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      ${modeBannerHtml()}
       <p class="ask" style="text-align:center;margin-bottom:10px;color:var(--ink-soft);font-size:0.85rem;">Laquelle a le plus de ${METRIC_LABEL[round.metric]} ?</p>
       <div class="fa-pair" id="faPair">
         <button class="fa-video" data-choice="A" type="button">
@@ -520,7 +626,7 @@
     const $pair = $('faPair'), $result = $('faResult'), $next = $('faNext');
     $pair.querySelectorAll('button').forEach(b => b.disabled = true);
     try {
-      const res = await callGame('check_face', { idToken, mode: 'face_a_face', roundIndex: round.round, choice });
+      const res = await callGame('check_face', { idToken, mode: 'face_a_face', roundIndex: round.round, choice, practiceToken: currentPracticeToken || undefined, date: currentChallengeDate || undefined });
       roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
       renderRoundProgress();
       const btnA = $pair.querySelector('[data-choice="A"]'), btnB = $pair.querySelector('[data-choice="B"]');
@@ -540,6 +646,7 @@
     photoAttempts = 0;
     const $play = $('playPanel');
     $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      ${modeBannerHtml()}
       <p class="ask" style="margin-bottom:10px;color:var(--ink-soft);font-size:0.85rem;">Quelle vidéo se cache derrière cette miniature floutée ?</p>
       <div class="photo-mystery"><img id="photoMysteryImg" src="${round.mysteryThumbnailUrl||''}" alt="" style="filter:blur(${PHOTO_BLUR_LEVELS[0]}px);"></div>
       <div class="photo-options" id="photoOptions">${round.options.map(o => `
@@ -560,7 +667,7 @@
     const $btn = $opts.querySelector(`[data-option-id="${CSS.escape(optionId)}"]`);
     $opts.querySelectorAll('button').forEach(b => b.disabled = true);
     try {
-      const res = await callGame('check_photo', { idToken, mode: 'photo_floutee', roundIndex: round.round, optionId });
+      const res = await callGame('check_photo', { idToken, mode: 'photo_floutee', roundIndex: round.round, optionId, practiceToken: currentPracticeToken || undefined, date: currentChallengeDate || undefined });
       if (res.completed) {
         roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
         renderRoundProgress();
@@ -774,7 +881,7 @@
     });
   }
 
-  initGsi();
+  boot();
 </script>
 </body>
 </html>
