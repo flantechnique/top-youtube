@@ -95,7 +95,7 @@
   .chart-card svg { width: 100%; height: auto; display: block; }
 
   ol.board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .card { display: grid; grid-template-columns: 44px 120px 1fr; gap: 14px; align-items: center; padding: 10px;
+  .card { display: grid; grid-template-columns: 44px 120px 1fr auto; gap: 14px; align-items: center; padding: 10px;
     border-radius: 12px; background: var(--bg-raised); border: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%; font: inherit; color: inherit; }
   .card:hover { border-color: var(--accent); }
   .rank { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--ink-faint); text-align: center; }
@@ -104,8 +104,9 @@
   .card.r2 .rank, .card.r3 .rank { color: var(--ink-soft); }
   .thumb { position: relative; border-radius: 8px; overflow: hidden; background: var(--chip-bg); aspect-ratio: 16/9; }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .badge { position: absolute; top: 4px; left: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
-    font-weight: 700; padding: 2px 6px; border-radius: 5px; letter-spacing: 0.03em; color: #fff; }
+  .rank-change { display: flex; align-items: center; justify-content: center; min-width: 58px; }
+  .badge { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
+    font-weight: 700; padding: 4px 9px; border-radius: 7px; letter-spacing: 0.02em; color: #fff; white-space: nowrap; }
   .badge-new { background: var(--accent); }
   .badge-up { background: var(--positive); }
   .badge-down { background: var(--negative); }
@@ -190,8 +191,10 @@
 
   @media (max-width: 640px) { .views-panel { grid-template-columns: 1fr; } }
   @media (max-width: 520px) {
-    .card { grid-template-columns: 32px 84px 1fr; gap: 10px; padding: 8px; }
+    .card { grid-template-columns: 32px 84px 1fr auto; gap: 8px; padding: 8px; }
     .rank { font-size: 1.25rem; } .meta h3 { font-size: 0.88rem; }
+    .rank-change { min-width: 0; }
+    .badge { font-size: 0.68rem; padding: 3px 6px; }
     .modal-head { flex-direction: column; } .modal-thumb { width: 100%; }
   }
 </style>
@@ -350,7 +353,6 @@
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return iso; } };
   const fmtDay = (iso) => { try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }); } catch { return iso; } };
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
   /* ---------- chart ---------- */
   function buildChartSVG(points, { value, xLabel, fmtY, mode = 'area' }) {
     const W = 560, H = 150, padL = 44, padR = 12, padT = 14, padB = 26;
@@ -387,7 +389,6 @@
       (n>1 ? `<text x="${xAt(n-1).toFixed(1)}" y="${H-8}" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">${escapeHtml(xLabel(points[n-1]))}</text>` : '');
     return `<svg viewBox="0 0 ${W} ${H}" role="img">${gridSvg}${dataSvg}${xLabelsSvg}</svg>`;
   }
-
   /* ---------- tabs / controls ---------- */
   function renderRegionTabs() {
     $regions.innerHTML = '';
@@ -425,7 +426,6 @@
     document.getElementById('sortCreators').querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
     renderCreatorsTable();
   }));
-
   /* ---------- status badges (rank change) ---------- */
   function buildStatusMap(videos, prevVideos) {
     const map = {};
@@ -459,7 +459,7 @@
     const liked = likedVideoIds.has(v.videoId) ? `<span class="liked-badge">❤</span>` : '';
     return `<li><button class="card ${rankClass}" data-video-id="${escapeHtml(v.videoId||'')}" type="button">
         <div class="rank">${idx+1}</div>
-        <div class="thumb">${thumb}${badgeHtml(status)}${liked}</div>
+        <div class="thumb">${thumb}${liked}</div>
         <div class="meta">
           <h3>${escapeHtml(v.title||'Titre indisponible')}</h3>
           <p class="channel">${escapeHtml(v.channelTitle||'')}${subscribedChannelIds.has(v.channelId) ? ' · abonné' : ''}</p>
@@ -469,9 +469,9 @@
             <span class="stat"><b>${fmtCompact.format(v.commentCount||0)}</b> commentaires</span>
           </div>
         </div>
+        <div class="rank-change">${badgeHtml(status)}</div>
       </button></li>`;
   }
-
   function renderCategoryChips(videos) {
     const ids = [...new Set(videos.map(v => String(v.categoryId||'')))].filter(Boolean);
     if (ids.length < 2) { $catChips.style.display = 'none'; return; }
@@ -518,7 +518,6 @@
     if (state.period==='monthly' && cur.period_key) range = ` (${fmtMonth(cur.period_key)})`;
     $updated.innerHTML = stamp ? `<b>${periodLabel}</b>${range} · maj ${fmtDate(stamp)}` : '';
   }
-
   function renderViewsPanel(data) {
     if (!data) { $viewsPanel.style.display = 'none'; return; }
     $viewsPanel.style.display = 'grid';
@@ -546,7 +545,6 @@
       renderViewsPanel(data || null);
     } catch (e) { console.error(e); renderViewsPanel(null); }
   }
-
   /* ---------- video detail modal ---------- */
   $board.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-video-id]');
@@ -597,7 +595,6 @@
   function closeModal() { $modalOverlay.classList.remove('show'); }
   $modalOverlay.addEventListener('click', (e) => { if (e.target === $modalOverlay) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
   /* ---------- creators ---------- */
   let lastCreatorsDoc = null;
   function renderCreatorsTable() {
@@ -631,7 +628,6 @@
     else if (state.tab === 'creators') loadCreators();
     else renderMonTop();
   }
-
   /* ---------- Mon Top ---------- */
   async function renderMonTop() {
     if (!gToken) { $('monTopContent').style.display = 'none'; return; }
@@ -651,7 +647,6 @@
       ? subInTop.map((c,i) => `<tr><td class="rk">${i+1}</td><td>${escapeHtml(c.channelTitle||'Chaîne inconnue')}</td><td>${fmtFull.format(c.videoCount||0)}</td><td>${fmtCompact.format(c.totalViews||0)}</td></tr>`).join('')
       : `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-faint);">Aucune de tes chaînes abonnées n'apparaît dans le Top pour cette région / fenêtre.</td></tr>`;
   }
-
   /* ---------- spotlight (vidéos du jour, panneau défilant) ---------- */
   function spotlightCardHtml(v) {
     const thumb = v.thumbnail_url ? `<img src="${v.thumbnail_url}" alt="" loading="lazy">` : '';
@@ -681,7 +676,6 @@
     const btn = e.target.closest('.spotlight-card[data-video-id]');
     if (btn) openVideoDetail(btn.dataset.videoId);
   });
-
   /* ---------- Google sign-in: liked videos + subscriptions ---------- */
   let gToken = null;
   function initGoogle() {
@@ -717,7 +711,6 @@
     if (!resp.ok) throw new Error('YouTube API error ' + resp.status);
     return resp.json();
   }
-
   async function loadGoogleData() {
     try {
       const ch = await ytApi('channels', { part: 'contentDetails', mine: 'true' });
