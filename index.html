@@ -396,7 +396,7 @@
   const GAME_FN_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/game';
   const THUMB_PROXY_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/thumb-proxy';
 
-  constsb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   async function callGame(action, payload) {
     const resp = await fetch(GAME_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...payload }) });
     const data = await resp.json();
