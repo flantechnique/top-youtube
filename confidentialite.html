@@ -70,25 +70,32 @@
 
   <article class="legal">
     <h2>Politique de confidentialité</h2>
-    <p class="meta">Dernière mise à jour : 9 septembre 2026</p>
+    <p class="meta">Dernière mise à jour : 10 septembre 2026</p>
 
     <div class="legal-box">
-      <p>Top YouTube est un projet personnel et non commercial. Il ne crée pas de compte utilisateur et ne conserve aucune donnée personnelle sur ses propres serveurs : la seule donnée personnelle qui existe, le jeton de connexion Google, reste dans votre navigateur et n'est jamais transmise à l'éditeur du site.</p>
+      <p>Top YouTube est un projet personnel et non commercial. La consultation du classement ne crée aucun compte et ne collecte aucune donnée. Si vous choisissez de vous connecter avec votre compte Google pour utiliser les alertes, le jeu, le pronostic quotidien ou les ligues entre amis, certaines données sont alors conservées côté serveur, toujours associées à un identifiant pseudonymisé plutôt qu'à votre identité Google — le détail est donné ci-dessous.</p>
     </div>
 
     <h3>1. Responsable du traitement</h3>
-    <p>Le site est édité à titre personnel par Flan Technique. Pour toute question relative à cette politique ou à vos données, vous pouvez écrire à <a href="mailto:flantechnique@proton.me">flantechnique@proton.me</a>.</p>
+    <p>Le site est édité à titre personnel par Flan Technique. Pour toute question relative à cette politique ou à vos données, y compris une demande de suppression, vous pouvez écrire à <a href="mailto:flantechnique@proton.me">flantechnique@proton.me</a>.</p>
 
     <h3>2. Ce que le site affiche, sans donnée personnelle</h3>
-    <p>La consultation du classement (vidéos, créateurs, vues, likes, commentaires) ne nécessite aucune connexion ni inscription. Ces informations proviennent de l'API publique YouTube Data et sont stockées de façon agrégée et anonyme dans une base de données (Supabase) en lecture seule pour les visiteurs. Aucune information relative aux visiteurs eux-mêmes (adresse IP, identifiant, cookie de suivi) n'est collectée par cette partie du site.</p>
+    <p>La consultation du classement (vidéos, créateurs, vues, likes, commentaires, comparateur de régions, rétrospective) ne nécessite aucune connexion ni inscription. Ces informations proviennent de l'API publique YouTube Data et sont stockées de façon agrégée et anonyme dans une base de données (Supabase) en lecture seule pour les visiteurs. Aucune information relative aux visiteurs eux-mêmes (adresse IP, identifiant, cookie de suivi) n'est collectée par cette partie du site.</p>
 
-    <h3>3. Connexion à votre compte Google (fonctionnalité facultative)</h3>
-    <p>Si vous cliquez sur « Connecter mon compte Google », le site utilise le service d'authentification de Google (Google Identity Services) pour vous demander l'autorisation d'accéder, en lecture seule, à :</p>
+    <h3>3. Connexion à votre compte Google</h3>
+    <p>Si vous cliquez sur « Se connecter avec Google », le site utilise le service d'authentification de Google (Google Identity Services) pour vous identifier. Selon la fonctionnalité utilisée, deux niveaux de traitement s'appliquent.</p>
+
+    <h3>3.1 Alertes et comparateur (lecture de vos vidéos likées et de vos abonnements)</h3>
+    <p>Pour vous montrer quelles vidéos du classement vous avez déjà likées ou quels créateurs vous suivez déjà, et pour vous prévenir lorsqu'une de vos vidéos likées ou l'un de vos abonnements entre dans le Top, le site demande l'autorisation, en lecture seule, d'accéder à :</p>
     <ul>
       <li>vos vidéos « likées » sur YouTube ;</li>
       <li>la liste de vos abonnements YouTube.</li>
     </ul>
-    <p>Ces informations sont utilisées uniquement pour calculer, dans votre navigateur, des statistiques qui ne sont affichées qu'à vous (nombre de vidéos du classement déjà likées, créateurs du Top déjà suivis). Le jeton d'accès délivré par Google reste en mémoire de la page : il n'est ni envoyé à un serveur, ni enregistré sur votre appareil, ni conservé par l'éditeur du site ; il disparaît dès que vous fermez ou rechargez la page. Cette fonctionnalité repose sur votre consentement explicite, donné en cliquant sur le bouton de connexion, et vous pouvez le retirer à tout moment en vous déconnectant ou en révoquant l'accès depuis votre <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">compte Google</a>.</p>
+    <p>Les identifiants (ID) des vidéos likées et des chaînes suivies sont alors envoyés au serveur et conservés dans la base de données, afin de pouvoir comparer ce contenu au classement sans avoir à redemander l'autorisation à chaque visite et pour générer les alertes. Ces identifiants sont associés non pas à votre nom ou votre compte Google en clair, mais à un identifiant technique à sens unique (empreinte cryptographique de votre identifiant Google, impossible à retransformer en votre identité) : l'éditeur du site ne peut pas retrouver qui vous êtes à partir de cette base. Aucune vidéo, image ou titre n'est stocké : uniquement des identifiants techniques. Le jeton d'accès Google lui-même n'est jamais stocké ni transmis au-delà de cet échange initial.</p>
+    <p>Cette fonctionnalité repose sur votre consentement explicite, donné en connectant votre compte, et vous pouvez le retirer à tout moment en nous demandant la suppression de ces données (article 1) ou en révoquant l'accès depuis votre <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">compte Google</a>.</p>
+
+    <h3>3.2 Jeu, pronostic quotidien et ligues entre amis</h3>
+    <p>Si vous choisissez un pseudo pour jouer, ce pseudo, vos scores, vos pronostics quotidiens et votre appartenance à une ou plusieurs ligues sont conservés côté serveur, associés au même identifiant pseudonymisé qu'au point 3.1 — jamais à votre nom Google, qui n'est jamais affiché ni stocké. Une ligue entre amis se rejoint uniquement via un lien d'invitation propre à son créateur (temporaire ou permanent) : rejoindre une ligue ne révèle jamais votre adresse e-mail aux autres membres, qui ne voient que votre pseudo et vos scores.</p>
 
     <h3>4. Cookies et traceurs</h3>
     <p>Le site ne dépose aucun cookie de mesure d'audience ou de publicité. Aucune donnée de navigation n'est transmise à des régies publicitaires.</p>
@@ -97,12 +104,12 @@
     <p>Certaines briques techniques nécessaires au fonctionnement du site sont fournies par des tiers, chacun régi par sa propre politique de confidentialité :</p>
     <ul>
       <li><strong>GitHub Pages</strong> (GitHub, Inc. / Microsoft) : hébergement statique des pages du site — <a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">politique de confidentialité de GitHub</a>.</li>
-      <li><strong>Supabase</strong> : hébergement de la base de données publique du classement.</li>
-      <li><strong>Google / YouTube</strong> : fourniture des données publiques des vidéos (API YouTube Data) et, si vous l'activez, authentification de votre compte — <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">politique de confidentialité de Google</a>.</li>
+      <li><strong>Supabase</strong> : hébergement de la base de données publique du classement et, si vous vous connectez, des données décrites à l'article 3 (identifiants pseudonymisés, pseudo, scores, pronostics, ligues).</li>
+      <li><strong>Google / YouTube</strong> : fourniture des données publiques des vidéos (API YouTube Data) et authentification de votre compte si vous l'activez — <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">politique de confidentialité de Google</a>.</li>
     </ul>
 
     <h3>6. Durée de conservation</h3>
-    <p>Les statistiques publiques des vidéos (vues, likes, commentaires, classement) sont conservées pour permettre l'affichage de l'historique du Top. Aucune donnée personnelle liée à votre compte Google n'est conservée par le site au-delà de la session de navigation en cours.</p>
+    <p>Les statistiques publiques des vidéos (vues, likes, commentaires, classement) sont conservées pour permettre l'affichage de l'historique du Top. Les données décrites à l'article 3 (identifiants pseudonymisés liés à vos vidéos likées, abonnements, pseudo, scores, pronostics, ligues) sont conservées tant que vous utilisez ces fonctionnalités, et supprimées sur simple demande à l'adresse indiquée à l'article 1.</p>
 
     <h3>7. Vos droits</h3>
     <p>Conformément au Règlement général sur la protection des données (RGPD) et à la loi « Informatique et Libertés », vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition concernant vos données personnelles. Ces droits s'exercent auprès de l'éditeur du site à l'adresse indiquée à l'article 1, ou directement auprès de Google pour les données liées à votre compte Google. Vous pouvez également introduire une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.</p>
