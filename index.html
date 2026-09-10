@@ -193,6 +193,37 @@
   .mini-auth-btn:hover { border-color: var(--accent); color: var(--ink); }
   .mini-auth-btn.connected { border-color: var(--positive); color: var(--positive); }
 
+  /* ---------- Top TikTok ---------- */
+  .tiktok-intro { margin: 0 0 16px; color: var(--ink-soft); font-size: 0.92rem; max-width: 62ch; }
+  .tiktok-intro strong { color: var(--ink); }
+  .cat-picker { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 22px; }
+  .cat-chip { font: inherit; font-size: 0.82rem; font-weight: 600; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; }
+  .cat-chip:hover { border-color: var(--accent); color: var(--ink); }
+  .cat-chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent); }
+  .tiktok-section h2 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.2rem; margin: 8px 0 12px; display: flex; align-items: baseline; gap: 8px; }
+  .tiktok-section h2 .count { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 500; color: var(--ink-faint); }
+  .creator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 30px; }
+  .tk-card { display: flex; gap: 12px; align-items: center; background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px; }
+  .tk-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--chip-bg); flex: none; object-fit: cover;
+    border: 1px solid var(--line); }
+  .tk-avatar.placeholder { display: flex; align-items: center; justify-content: center; font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800; font-size: 1.3rem; color: var(--ink-faint); }
+  .tk-meta { min-width: 0; flex: 1; }
+  .tk-name { display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tk-verified { color: var(--accent); flex: none; }
+  .tk-handle { margin: 1px 0 6px; font-size: 0.78rem; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tk-stats { display: flex; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--ink-soft); }
+  .tk-actions { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+  .follow-btn { font: inherit; font-weight: 600; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+  .follow-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .follow-btn.following { border-color: var(--positive); color: var(--positive); }
+  .tk-open { font-size: 0.72rem; color: var(--ink-faint); text-align: center; text-decoration: none; }
+  .tk-open:hover { color: var(--accent); }
+  .tiktok-empty { padding: 30px 20px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 12px; }
+
   /* ---------- Mon Top ---------- */
   .montop-empty { padding: 30px 20px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 12px; margin-top: 4px; }
   .montop-section h2 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 26px 0 10px; }
@@ -301,6 +332,7 @@
       <button class="tab-btn" data-tab="compare" role="tab" aria-selected="false">Comparer</button>
       <button class="tab-btn" data-tab="retro" role="tab" aria-selected="false">Rétrospective</button>
       <button class="tab-btn" data-tab="montop" role="tab" aria-selected="false">Mon Top</button>
+      <button class="tab-btn" data-tab="tiktok" role="tab" aria-selected="false">Top TikTok</button>
       <a class="tab-btn game-link" href="jeu.html">🎮 Jouer</a>
     </nav>
 
@@ -372,6 +404,19 @@
             </table>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="viewTikTok" style="display:none;">
+      <p class="tiktok-intro">Sélectionne les thèmes qui t'intéressent : on te propose des créateurs <strong>TikTok</strong> français à suivre dans ces catégories. Aucun compte requis — ta sélection reste sur cet appareil.</p>
+      <div class="cat-picker" id="tkCatPicker"></div>
+      <div class="tiktok-section" id="tkFollowedSection" style="display:none;">
+        <h2>Tes créateurs suivis <span class="count" id="tkFollowedCount"></span></h2>
+        <div class="creator-grid" id="tkFollowedGrid"></div>
+      </div>
+      <div class="tiktok-section">
+        <h2 id="tkSuggestTitle">Créateurs suggérés <span class="count" id="tkSuggestCount"></span></h2>
+        <div class="creator-grid" id="tkSuggestGrid"><p style="color:var(--ink-faint);">Chargement…</p></div>
       </div>
     </div>
 
@@ -482,7 +527,7 @@
   const $regions = $('regions'), $board = $('board'), $updated = $('updated'), $catChips = $('catChips');
   const $viewsPanel = $('viewsPanel'), $dailyChart = $('dailyChart'), $monthlyChart = $('monthlyChart'), $dailyCur = $('dailyCur'), $monthlyCur = $('monthlyCur');
   const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $viewMonTop = $('viewMonTop'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
-  const $viewCompare = $('viewCompare'), $viewRetro = $('viewRetro');
+  const $viewCompare = $('viewCompare'), $viewRetro = $('viewRetro'), $viewTikTok = $('viewTikTok');
   const $creatorsBody = $('creatorsBody'), $creatorsTable = $('creatorsTable');
   const $modalOverlay = $('modalOverlay'), $modal = $('modal');
   const $spotlightRail = $('spotlightRail'), $spotlightTrack = $('spotlightTrack');
@@ -552,10 +597,11 @@
     $viewMonTop.style.display = state.tab==='montop' ? '' : 'none';
     $viewCompare.style.display = state.tab==='compare' ? '' : 'none';
     $viewRetro.style.display = state.tab==='retro' ? '' : 'none';
+    $viewTikTok.style.display = state.tab==='tiktok' ? '' : 'none';
     $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $periodCreators.style.display = (state.tab==='creators' || state.tab==='montop') ? '' : 'none';
     $surpriseBtn.style.display = state.tab==='ranking' ? '' : 'none';
-    $regions.style.display = state.tab==='compare' ? 'none' : '';
+    $regions.style.display = (state.tab==='compare' || state.tab==='tiktok') ? 'none' : '';
     loadAll();
     window.__tytTrack && window.__tytTrack(state.tab, state.region);
   }));
@@ -854,7 +900,107 @@
     else if (state.tab === 'creators') loadCreators();
     else if (state.tab === 'compare') loadCompare();
     else if (state.tab === 'retro') loadRetro();
+    else if (state.tab === 'tiktok') loadTikTok();
     else renderMonTop();
+  }
+
+  /* ---------- Top TikTok ---------- */
+  const TK_FOLLOW_KEY = 'tyt_tiktok_follows';
+  const TK_CATS_KEY = 'tyt_tiktok_cats';
+  let tkCategories = null, tkCreators = null, tkLoaded = false;
+  let tkSelectedCats = new Set(JSON.parse(localStorage.getItem(TK_CATS_KEY) || '[]'));
+  function tkFollowed() { try { return new Set(JSON.parse(localStorage.getItem(TK_FOLLOW_KEY) || '[]')); } catch { return new Set(); } }
+  function tkSetFollowed(set) { try { localStorage.setItem(TK_FOLLOW_KEY, JSON.stringify([...set])); } catch {} }
+  function tkFmt(n) {
+    if (n == null) return '—';
+    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+  function tkCard(c, followed) {
+    const initial = (c.display_name || c.handle || '?').trim()[0]?.toUpperCase() || '?';
+    const avatar = c.avatar_url
+      ? `<img class="tk-avatar" src="${c.avatar_url}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+      : `<div class="tk-avatar placeholder">${initial}</div>`;
+    return `<div class="tk-card" data-handle="${c.handle}">
+      ${avatar}
+      <div class="tk-meta">
+        <div class="tk-name">${(c.display_name || c.handle).replace(/</g,'&lt;')}${c.verified ? ' <span class="tk-verified" title="Compte vérifié">✔</span>' : ''}</div>
+        <p class="tk-handle">@${c.handle}</p>
+        <div class="tk-stats"><span title="Abonnés">👤 ${tkFmt(c.follower_count)}</span><span title="Vidéos">🎬 ${tkFmt(c.video_count)}</span></div>
+      </div>
+      <div class="tk-actions">
+        <button class="follow-btn${followed ? ' following' : ''}" data-follow="${c.handle}">${followed ? 'Suivi ✓' : '+ Suivre'}</button>
+        <a class="tk-open" href="https://www.tiktok.com/@${c.handle}" target="_blank" rel="noopener">Voir le profil</a>
+      </div>
+    </div>`;
+  }
+  function tkRenderGrids() {
+    const followed = tkFollowed();
+    const $followedSection = $('tkFollowedSection'), $followedGrid = $('tkFollowedGrid'), $followedCount = $('tkFollowedCount');
+    if (followed.size) {
+      $followedSection.style.display = '';
+      $followedCount.textContent = `(${followed.size})`;
+      $followedGrid.innerHTML = (tkCreators || []).filter(c => followed.has(c.handle)).map(c => tkCard(c, true)).join('') || '<p style="color:var(--ink-faint);">—</p>';
+    } else {
+      $followedSection.style.display = 'none';
+    }
+    const pool = tkSelectedCats.size
+      ? (tkCreators || []).filter(c => tkSelectedCats.has(c.category_slug))
+      : (tkCreators || []);
+    const suggested = pool.filter(c => !followed.has(c.handle));
+    $('tkSuggestTitle').firstChild.textContent = tkSelectedCats.size ? 'Créateurs suggérés ' : 'Tous les créateurs ';
+    $('tkSuggestCount').textContent = `(${suggested.length})`;
+    const $grid = $('tkSuggestGrid');
+    $grid.innerHTML = suggested.length
+      ? suggested.map(c => tkCard(c, false)).join('')
+      : '<div class="tiktok-empty">Aucun créateur dans cette sélection pour le moment.</div>';
+  }
+  function tkRenderPicker() {
+    const $picker = $('tkCatPicker');
+    $picker.innerHTML = (tkCategories || []).map(cat =>
+      `<button type="button" class="cat-chip" data-cat="${cat.slug}" aria-pressed="${tkSelectedCats.has(cat.slug)}">${cat.label}</button>`
+    ).join('');
+    $picker.querySelectorAll('.cat-chip').forEach(b => b.addEventListener('click', () => {
+      const slug = b.dataset.cat;
+      if (tkSelectedCats.has(slug)) tkSelectedCats.delete(slug); else tkSelectedCats.add(slug);
+      b.setAttribute('aria-pressed', String(tkSelectedCats.has(slug)));
+      localStorage.setItem(TK_CATS_KEY, JSON.stringify([...tkSelectedCats]));
+      tkRenderGrids();
+    }));
+  }
+  function tkWireFollowClicks(root) {
+    root.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-follow]');
+      if (!btn) return;
+      const handle = btn.dataset.follow;
+      const followed = tkFollowed();
+      if (followed.has(handle)) followed.delete(handle); else followed.add(handle);
+      tkSetFollowed(followed);
+      tkRenderGrids();
+    });
+  }
+  async function loadTikTok() {
+    if (tkLoaded) { tkRenderGrids(); return; }
+    tkLoaded = true;
+    tkWireFollowClicks($('tkFollowedGrid'));
+    tkWireFollowClicks($('tkSuggestGrid'));
+    try {
+      const [{ data: cats, error: e1 }, { data: creators, error: e2 }] = await Promise.all([
+        sb.from('tiktok_categories').select('slug,label').order('sort_order'),
+        sb.from('tiktok_creators').select('handle,display_name,category_slug,avatar_url,follower_count,video_count,verified')
+          .eq('is_active', true).order('follower_count', { ascending: false, nullsFirst: false }),
+      ]);
+      if (e1) throw e1; if (e2) throw e2;
+      tkCategories = cats || [];
+      tkCreators = creators || [];
+    } catch (e) {
+      console.error(e);
+      $('tkSuggestGrid').innerHTML = '<div class="tiktok-empty">Impossible de charger les créateurs pour le moment.</div>';
+      return;
+    }
+    tkRenderPicker();
+    tkRenderGrids();
   }
 
   /* ---------- comparateur de régions ---------- */
