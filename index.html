@@ -165,13 +165,28 @@
   .spotlight-card .cat { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); font-weight: 700; }
   .spotlight-card .ttl { font-size: 0.8rem; font-weight: 600; line-height: 1.25; margin: 2px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .spotlight-card .stat { font-size: 0.68rem; color: var(--ink-faint); font-family: 'IBM Plex Mono', monospace; }
-  .spotlight-strip { display: none; overflow: hidden; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-raised); padding: 10px; }
-  .spotlight-strip-track { display: flex; gap: 10px; width: max-content; animation: spotlight-scroll-x 26s linear infinite; }
-  .spotlight-strip:hover .spotlight-strip-track { animation-play-state: paused; }
-  @keyframes spotlight-scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  .spotlight-strip .spotlight-card { flex: 0 0 160px; }
-  @media (prefers-reduced-motion: reduce) { .spotlight-track, .spotlight-strip-track { animation: none; } }
-  @media (max-width: 1100px) { .spotlight-rail { display: none; } .spotlight-strip { display: block; } }
+  @media (prefers-reduced-motion: reduce) { .spotlight-track { animation: none; } }
+  @media (max-width: 1100px) { .spotlight-rail { display: none; } }
+
+  /* ---------- mini connexion (coin haut droit) ---------- */
+  .mini-auth { display: flex; gap: 6px; align-items: center; }
+  .mini-auth-btn { font: inherit; font-weight: 600; font-size: 0.78rem; padding: 6px 13px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+  .mini-auth-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .mini-auth-btn.connected { border-color: var(--positive); color: var(--positive); }
+
+  /* ---------- Mon Top ---------- */
+  .montop-empty { padding: 30px 20px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 12px; margin-top: 4px; }
+  .montop-section h2 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 26px 0 10px; }
+  .montop-section:first-of-type h2 { margin-top: 6px; }
+  .liked-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+  .liked-card { display: block; background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-decoration: none; color: inherit; }
+  .liked-card:hover { border-color: var(--accent); }
+  .liked-card .thumb { aspect-ratio: 16/9; background: var(--chip-bg); }
+  .liked-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .liked-card .lc-meta { padding: 8px 10px; }
+  .liked-card h4 { margin: 0 0 3px; font-size: 0.85rem; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .liked-card p { margin: 0; font-size: 0.76rem; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   @media (max-width: 640px) { .views-panel { grid-template-columns: 1fr; } }
   @media (max-width: 520px) {
@@ -189,30 +204,23 @@
   </aside>
 
   <div class="wrap">
-    <div class="spotlight-strip" id="spotlightStrip">
-      <div class="spotlight-head">Vidéos du jour ✨</div>
-      <div class="spotlight-strip-track" id="spotlightStripTrack"></div>
-    </div>
-
     <header class="top">
       <div class="brand">
         <h1>Top<span> YouTube</span></h1>
         <p>Le classement des vidéos les plus regardées, jour après jour — par pays.</p>
       </div>
-      <div class="updated" id="updated">chargement…</div>
-    </header>
-
-    <div class="google-bar">
-      <div>
-        <p id="gStatus">Connecte ton compte Google pour voir combien de vidéos et créateurs du Top tu suis déjà.</p>
-        <div class="g-stats" id="gStats" style="display:none;"></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+        <div class="mini-auth">
+          <button class="mini-auth-btn" id="miniAuthBtn" type="button">Se connecter</button>
+        </div>
+        <div class="updated" id="updated">chargement…</div>
       </div>
-      <div id="gBtn"></div>
-    </div>
+    </header>
 
     <nav class="tabbar" role="tablist" aria-label="Vue">
       <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="true">Classement</button>
       <button class="tab-btn" data-tab="creators" role="tab" aria-selected="false">Top créateurs</button>
+      <button class="tab-btn" data-tab="montop" role="tab" aria-selected="false">Mon Top</button>
       <a class="tab-btn game-link" href="jeu.html">🎮 Jouer</a>
     </nav>
 
@@ -261,6 +269,31 @@
       </div>
     </div>
 
+    <div id="viewMonTop" style="display:none;">
+      <div class="google-bar" id="monTopBar">
+        <div>
+          <p id="gStatus">Connecte ton compte Google pour voir combien de vidéos et créateurs du Top tu suis déjà.</p>
+          <div class="g-stats" id="gStats" style="display:none;"></div>
+        </div>
+        <div id="gBtn"></div>
+      </div>
+      <div id="monTopContent" style="display:none;">
+        <div class="montop-section">
+          <h2>Vidéos likées (<span id="likedCount">0</span>)</h2>
+          <div class="liked-grid" id="likedGrid"></div>
+        </div>
+        <div class="montop-section">
+          <h2>Chaînes suivies parmi le Top</h2>
+          <div class="creators-scroll">
+            <table class="creators" id="subChannelsTable">
+              <thead><tr><th>#</th><th>Créateur</th><th>Vidéos</th><th>Vues</th></tr></thead>
+              <tbody id="subChannelsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer>Données · YouTube Data API v3 (chart <code>mostPopular</code>) · classement mis à jour par une collecte planifiée · <a href="jeu.html">Jouer</a> · <a href="https://github.com/flantechnique/top-youtube" id="repoLink" target="_blank" rel="noopener">code source</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
   </div>
 </div>
@@ -300,15 +333,17 @@
   let state = { tab: 'ranking', region: 'FR', period: 'daily', creatorPeriod: '24h', creatorSort: 'totalViews', activeCategories: null, _touched: false };
   let currentVideos = [];
   let likedVideoIds = new Set();
+  let likedVideosDetails = [];
   let subscribedChannelIds = new Set();
 
   const $ = (id) => document.getElementById(id);
   const $regions = $('regions'), $board = $('board'), $updated = $('updated'), $catChips = $('catChips');
   const $viewsPanel = $('viewsPanel'), $dailyChart = $('dailyChart'), $monthlyChart = $('monthlyChart'), $dailyCur = $('dailyCur'), $monthlyCur = $('monthlyCur');
-  const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
+  const $viewRanking = $('viewRanking'), $viewCreators = $('viewCreators'), $viewMonTop = $('viewMonTop'), $periodRanking = $('periodRanking'), $periodCreators = $('periodCreators');
   const $creatorsBody = $('creatorsBody'), $creatorsTable = $('creatorsTable');
   const $modalOverlay = $('modalOverlay'), $modal = $('modal');
-  const $spotlightRail = $('spotlightRail'), $spotlightTrack = $('spotlightTrack'), $spotlightStrip = $('spotlightStrip'), $spotlightStripTrack = $('spotlightStripTrack');
+  const $spotlightRail = $('spotlightRail'), $spotlightTrack = $('spotlightTrack');
+  const $miniAuthBtn = $('miniAuthBtn'), $likedGrid = $('likedGrid'), $subChannelsBody = $('subChannelsBody');
 
   const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
   const fmtFull = new Intl.NumberFormat('fr-FR');
@@ -369,10 +404,12 @@
     document.querySelectorAll('.tab-btn[data-tab]').forEach(x => x.setAttribute('aria-selected', String(x===b)));
     $viewRanking.style.display = state.tab==='ranking' ? '' : 'none';
     $viewCreators.style.display = state.tab==='creators' ? '' : 'none';
+    $viewMonTop.style.display = state.tab==='montop' ? '' : 'none';
     $periodRanking.style.display = state.tab==='ranking' ? '' : 'none';
-    $periodCreators.style.display = state.tab==='creators' ? '' : 'none';
+    $periodCreators.style.display = (state.tab==='creators' || state.tab==='montop') ? '' : 'none';
     loadAll();
   }));
+  $miniAuthBtn.addEventListener('click', () => document.querySelector('.tab-btn[data-tab="montop"]').click());
   $periodRanking.querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
     state.period = b.dataset.period; state.activeCategories = null; state._touched = false;
     $periodRanking.querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
@@ -381,7 +418,7 @@
   $periodCreators.querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
     state.creatorPeriod = b.dataset.cperiod;
     $periodCreators.querySelectorAll('.period-btn').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
-    loadCreators();
+    if (state.tab === 'montop') renderMonTop(); else loadCreators();
   }));
   document.getElementById('sortCreators').querySelectorAll('.period-btn').forEach(b => b.addEventListener('click', () => {
     state.creatorSort = b.dataset.sort;
@@ -589,7 +626,31 @@
     renderCreatorsTable();
   }
 
-  function loadAll() { if (state.tab === 'ranking') loadRanking(); else loadCreators(); }
+  function loadAll() {
+    if (state.tab === 'ranking') loadRanking();
+    else if (state.tab === 'creators') loadCreators();
+    else renderMonTop();
+  }
+
+  /* ---------- Mon Top ---------- */
+  async function renderMonTop() {
+    if (!gToken) { $('monTopContent').style.display = 'none'; return; }
+    $('likedCount').textContent = fmtFull.format(likedVideosDetails.length);
+    $likedGrid.innerHTML = likedVideosDetails.length
+      ? likedVideosDetails.slice(0, 60).map(v => `
+          <a class="liked-card" href="https://www.youtube.com/watch?v=${encodeURIComponent(v.videoId)}" target="_blank" rel="noopener">
+            <div class="thumb">${v.thumbnailUrl ? `<img src="${v.thumbnailUrl}" alt="" loading="lazy">` : ''}</div>
+            <div class="lc-meta"><h4>${escapeHtml(v.title||'')}</h4><p>${escapeHtml(v.channelTitle||'')}</p></div>
+          </a>`).join('')
+      : '<div class="montop-empty">Aucune vidéo likée trouvée sur ta chaîne YouTube.</div>';
+
+    await loadCreators();
+    const creators = (lastCreatorsDoc && Array.isArray(lastCreatorsDoc.creators)) ? lastCreatorsDoc.creators : [];
+    const subInTop = creators.filter(c => subscribedChannelIds.has(c.channelId)).sort((a,b) => (b.totalViews||0)-(a.totalViews||0));
+    $subChannelsBody.innerHTML = subInTop.length
+      ? subInTop.map((c,i) => `<tr><td class="rk">${i+1}</td><td>${escapeHtml(c.channelTitle||'Chaîne inconnue')}</td><td>${fmtFull.format(c.videoCount||0)}</td><td>${fmtCompact.format(c.totalViews||0)}</td></tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--ink-faint);">Aucune de tes chaînes abonnées n'apparaît dans le Top pour cette région / fenêtre.</td></tr>`;
+  }
 
   /* ---------- spotlight (vidéos du jour, panneau défilant) ---------- */
   function spotlightCardHtml(v) {
@@ -606,16 +667,14 @@
       const { data, error } = await sb.rpc('get_daily_spotlight', { p_region: state.region });
       if (error) throw error;
       const items = data || [];
-      if (!items.length) { $spotlightRail.style.display = 'none'; $spotlightStrip.style.display = 'none'; return; }
+      if (!items.length) { $spotlightRail.style.display = 'none'; return; }
       const cardsHtml = items.map(spotlightCardHtml).join('');
       // dupliqué une fois pour boucler le défilement sans saut visible
       $spotlightTrack.innerHTML = cardsHtml + cardsHtml;
-      $spotlightStripTrack.innerHTML = cardsHtml + cardsHtml;
       $spotlightRail.style.display = '';
-      $spotlightStrip.style.display = items.length > 1 ? 'block' : 'none';
     } catch (e) {
       console.error(e);
-      $spotlightRail.style.display = 'none'; $spotlightStrip.style.display = 'none';
+      $spotlightRail.style.display = 'none';
     }
   }
   document.addEventListener('click', (e) => {
@@ -637,7 +696,13 @@
         if (resp.error) { $('gStatus').textContent = 'Connexion refusée ou annulée.'; return; }
         gToken = resp.access_token;
         $('gStatus').innerHTML = 'Compte Google connecté — <button class="gsignout" id="gSignOut" type="button">se déconnecter</button>';
-        document.getElementById('gSignOut').addEventListener('click', () => { gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); $('gStats').style.display='none'; $('gStatus').textContent='Déconnecté.'; renderFromCache(); renderCreatorsTable(); });
+        document.getElementById('gSignOut').addEventListener('click', () => {
+          gToken = null; likedVideoIds.clear(); subscribedChannelIds.clear(); likedVideosDetails = [];
+          $('gStats').style.display='none'; $('gStatus').textContent='Déconnecté.';
+          $miniAuthBtn.textContent = 'Se connecter'; $miniAuthBtn.classList.remove('connected');
+          $('monTopContent').style.display = 'none';
+          renderFromCache(); renderCreatorsTable();
+        });
         await loadGoogleData();
       },
     });
@@ -658,11 +723,21 @@
       const ch = await ytApi('channels', { part: 'contentDetails', mine: 'true' });
       const likesPlaylistId = ch.items && ch.items[0] && ch.items[0].contentDetails.relatedPlaylists.likes;
       likedVideoIds = new Set();
+      likedVideosDetails = [];
       if (likesPlaylistId) {
         let pageToken = '';
         for (let i = 0; i < 4; i++) {
-          const resp = await ytApi('playlistItems', { part: 'contentDetails', playlistId: likesPlaylistId, maxResults: '50', pageToken });
-          (resp.items||[]).forEach(it => likedVideoIds.add(it.contentDetails.videoId));
+          const resp = await ytApi('playlistItems', { part: 'snippet,contentDetails', playlistId: likesPlaylistId, maxResults: '50', pageToken });
+          (resp.items||[]).forEach(it => {
+            const vid = it.contentDetails.videoId;
+            likedVideoIds.add(vid);
+            likedVideosDetails.push({
+              videoId: vid,
+              title: it.snippet?.title,
+              channelTitle: it.snippet?.videoOwnerChannelTitle || it.snippet?.channelTitle,
+              thumbnailUrl: it.snippet?.thumbnails?.medium?.url || it.snippet?.thumbnails?.default?.url,
+            });
+          });
           if (!resp.nextPageToken) break;
           pageToken = resp.nextPageToken;
         }
@@ -681,8 +756,11 @@
         <div class="s"><b>${likedVideoIds.size}</b><span>vidéos likées</span></div>
         <div class="s"><b>${subscribedChannelIds.size}</b><span>abonnements</span></div>
         <div class="s"><b>${inTopLiked}</b><span>vidéos du Top likées</span></div>`;
+      $miniAuthBtn.textContent = '✓ Connecté'; $miniAuthBtn.classList.add('connected');
+      $('monTopContent').style.display = '';
       renderFromCache();
       renderCreatorsTable();
+      renderMonTop();
     } catch (e) { console.error(e); $('gStatus').textContent = 'Erreur lors de la récupération des données Google.'; }
   }
 
