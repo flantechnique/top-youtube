@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le Jeu — Top YouTube</title>
-<meta name="description" content="Devine les statistiques des vidéos du Top YouTube : Le Juste Prix et Face à Face, classement quotidien et hebdomadaire.">
+<meta name="description" content="Devine les statistiques des vidéos du Top YouTube : Le Juste Prix, Face à Face, Miniature Floutée, pronostic quotidien et ligues entre amis.">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
@@ -54,18 +54,20 @@
   .btn:hover { opacity: 0.9; }
   .btn.ghost { background: transparent; color: var(--ink-soft); border-color: var(--line); }
   .btn.ghost:hover { border-color: var(--accent); color: var(--ink); }
+  .btn.small { padding: 6px 12px; font-size: 0.78rem; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .hint { font-size: 0.82rem; color: var(--ink-faint); margin-top: 6px; }
   .err { color: var(--negative); font-size: 0.85rem; margin-top: 6px; }
+  .ok-msg { color: var(--positive); font-size: 0.85rem; margin-top: 6px; }
 
-  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
   .mode-card { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 14px; padding: 16px; cursor: pointer; text-align: left; font: inherit; color: inherit; box-shadow: var(--shadow); }
   .mode-card:hover { border-color: var(--accent); }
   .mode-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
   .mode-card .emoji { font-size: 1.6rem; }
-  .mode-card h3 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.15rem; margin: 6px 0 4px; }
-  .mode-card p { margin: 0; font-size: 0.82rem; color: var(--ink-soft); }
-  @media (max-width: 560px) { .modes { grid-template-columns: 1fr; } }
+  .mode-card h3 { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.1rem; margin: 6px 0 4px; }
+  .mode-card p { margin: 0; font-size: 0.8rem; color: var(--ink-soft); }
+  @media (max-width: 640px) { .modes { grid-template-columns: 1fr; } }
 
   .round-progress { display: flex; gap: 6px; margin-bottom: 14px; }
   .round-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--chip-bg); color: var(--ink-faint); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
@@ -100,11 +102,26 @@
   .fa-vs { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--ink-faint); }
   .fa-value { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--ink); margin-top: 4px; }
 
+  /* ---------- photo floutée ---------- */
+  .photo-mystery { border-radius: 10px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); margin-bottom: 14px; max-width: 360px; }
+  .photo-mystery img { width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(20px); transition: filter 0.3s ease; }
+  .photo-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .photo-opt { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px; text-align: left; font: inherit; color: inherit; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .photo-opt:hover { border-color: var(--accent); }
+  .photo-opt .thumb { width: 64px; flex: none; border-radius: 6px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); }
+  .photo-opt .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-opt h5 { margin: 0 0 2px; font-size: 0.8rem; font-weight: 600; line-height: 1.25; }
+  .photo-opt span { font-size: 0.72rem; color: var(--ink-faint); }
+  .photo-opt.correct { border-color: var(--positive); background: color-mix(in srgb, var(--positive) 12%, var(--bg)); }
+  .photo-opt.wrong { border-color: var(--negative); }
+  .photo-opt:disabled { cursor: default; opacity: 0.75; }
+  @media (max-width: 480px) { .photo-options { grid-template-columns: 1fr; } }
+
   .score-summary { text-align: center; padding: 20px 10px; }
   .score-summary .big { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 2.4rem; color: var(--accent); }
   .score-summary p { color: var(--ink-soft); font-size: 0.9rem; }
 
-  .lb-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .lb-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
   .lb-tab { font: inherit; font-weight: 600; font-size: 0.85rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; }
   .lb-tab[aria-pressed="true"] { background: var(--chip-bg); color: var(--ink); border-color: var(--ink-faint); }
   table.lb { width: 100%; border-collapse: collapse; }
@@ -114,6 +131,38 @@
   table.lb tr:last-child td { border-bottom: none; }
   table.lb td.rk { font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; color: var(--ink-faint); width: 30px; }
   table.lb td.sc { font-family: 'IBM Plex Mono', monospace; text-align: right; font-weight: 600; color: var(--accent); }
+
+  /* ---------- pronostic ---------- */
+  .region-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .region-tab { font: inherit; font-weight: 600; font-size: 0.82rem; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); cursor: pointer; }
+  .region-tab[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .predict-grid { display: flex; flex-direction: column; gap: 8px; }
+  .predict-card { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); text-align: left; width: 100%; font: inherit; color: inherit; cursor: pointer; }
+  .predict-card:hover { border-color: var(--accent); }
+  .predict-card.picked { border-color: var(--accent); background: var(--accent-soft); }
+  .predict-card .rank { font-family: 'Big Shoulders Display', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--ink-faint); width: 22px; text-align: center; flex: none; }
+  .predict-card .thumb { width: 78px; flex: none; border-radius: 6px; overflow: hidden; aspect-ratio: 16/9; background: var(--chip-bg); }
+  .predict-card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .predict-card .pm { min-width: 0; }
+  .predict-card .pm h4 { margin: 0 0 2px; font-size: 0.85rem; font-weight: 600; line-height: 1.25; }
+  .predict-card .pm span { font-size: 0.74rem; color: var(--ink-faint); }
+  .predict-status { padding: 10px 12px; border-radius: 10px; background: var(--chip-bg); font-size: 0.85rem; margin-bottom: 12px; }
+  .predict-status.correct { background: color-mix(in srgb, var(--positive) 15%, var(--bg)); color: var(--positive); }
+  .predict-status.wrong { background: color-mix(in srgb, var(--negative) 12%, var(--bg)); color: var(--negative); }
+
+  /* ---------- ligues ---------- */
+  .league-create-row, .league-join-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .league-create-row input, .league-join-row input { font: inherit; font-size: 0.9rem; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); flex: 1; min-width: 160px; }
+  .league-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--bg); }
+  .league-card .lc-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .league-card h3 { margin: 0; font-family: 'Big Shoulders Display', sans-serif; font-weight: 700; font-size: 1.05rem; }
+  .league-card .lc-meta { font-size: 0.78rem; color: var(--ink-faint); }
+  .league-owner-tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--gold); background: var(--gold-bg); padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
+  .invite-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .invite-row input { font: inherit; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; padding: 7px 10px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--ink-soft); flex: 1; min-width: 140px; }
+  .invite-toggle { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--ink-soft); }
+  .lc-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .league-lb-wrap { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
 
   footer { margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.78rem; }
   footer a { color: var(--ink-faint); }
@@ -155,6 +204,11 @@
           <h3>Face à Face</h3>
           <p>Deux vidéos du Top s'affrontent : laquelle a généré le plus de vues, de likes ou de commentaires ?</p>
         </button>
+        <button class="mode-card" data-mode="photo_floutee" type="button" aria-pressed="false">
+          <div class="emoji">🖼️</div>
+          <h3>Miniature Floutée</h3>
+          <p>La miniature se dévoile petit à petit : devine la bonne vidéo parmi 4 propositions, en 3 essais maxi.</p>
+        </button>
       </div>
     </div>
 
@@ -169,19 +223,52 @@
       </div>
       <table class="lb" id="lbTable"><tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Choisis un mode de jeu pour voir le classement.</td></tr></tbody></table>
     </div>
+
+    <div class="panel" id="predictPanel">
+      <h2>🔮 Pronostic quotidien</h2>
+      <p class="sub">Choisis, parmi le Top 10 du jour, la vidéo qui sera n°1 demain. Une seule tentative par jour et par région.</p>
+      <div class="region-tabs" id="predictRegionTabs"></div>
+      <div id="predictStatus"></div>
+      <div class="predict-grid" id="predictGrid"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="panel" id="leaguesPanel">
+      <h2>🏆 Ligues entre amis</h2>
+      <p class="sub">Crée une ligue privée ou rejoins celle d'un ami grâce à un lien d'invitation propre à chaque joueur (temporaire ou permanent) — jamais basé sur l'e-mail.</p>
+      <div class="league-create-row">
+        <input type="text" id="leagueNameInput" placeholder="Nom de la ligue (ex. Les Potes du Top)" maxlength="40">
+        <button class="btn" id="leagueCreateBtn" type="button">Créer une ligue</button>
+      </div>
+      <div class="league-join-row">
+        <input type="text" id="leagueJoinInput" placeholder="Coller un lien ou un code d'invitation">
+        <button class="btn ghost" id="leagueJoinBtn" type="button">Rejoindre</button>
+      </div>
+      <p class="err" id="leagueErr" hidden></p>
+      <p class="ok-msg" id="leagueOk" hidden></p>
+      <div id="leaguesList"><p class="hint">Connecte-toi pour voir tes ligues.</p></div>
+    </div>
   </div>
 
   <footer>Top YouTube · <a href="index.html">Classement</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a></footer>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   const GOOGLE_CLIENT_ID = '709775807833-09olj4buog3tg64sq5s63u6m3a9aveni.apps.googleusercontent.com';
   const GAME_FN_URL = 'https://nqigjixiqtaavfscqhag.supabase.co/functions/v1/game';
+  const SUPABASE_URL = 'https://nqigjixiqtaavfscqhag.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_il0mHmr3JCISQaX-QeevDg_tKOmG3E4';
   const METRIC_LABEL = { viewCount: 'vues', likeCount: 'likes', commentCount: 'commentaires' };
   const ROUND_TIME_LIMIT_MS = 30000;
+  const PHOTO_BLUR_LEVELS = [20, 10, 4];
+  const REGIONS = [
+    { code: 'FR', label: 'France' }, { code: 'BE', label: 'Belgique' },
+    { code: 'CH', label: 'Suisse' }, { code: 'CA', label: 'Canada' },
+  ];
 
   const $ = (id) => document.getElementById(id);
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const fmtFull = new Intl.NumberFormat('fr-FR');
   const fmtCompact = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -193,6 +280,8 @@
   let roundStates = []; // per-round UI state
   let roundIdx = 0;
   let lbScope = 'daily';
+  let predictRegion = 'FR';
+  let predictPicked = null;
 
   async function callGame(action, payload) {
     const resp = await fetch(GAME_FN_URL, {
@@ -249,6 +338,10 @@
     $('authPanel').hidden = true;
     $('gameArea').hidden = false;
     $('pseudoDisplay').textContent = pseudo;
+    renderPredictRegionTabs();
+    loadPrediction();
+    loadLeagues();
+    maybeJoinFromUrl();
   }
 
   /* ---------- mode selection ---------- */
@@ -270,7 +363,7 @@
   async function loadLeaderboard() {
     const $tbl = $('lbTable');
     if (!currentMode) { $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Choisis un mode de jeu pour voir le classement.</td></tr></tbody>'; return; }
-    $('lbModeLabel').textContent = currentMode === 'juste_prix' ? 'Le Juste Prix' : 'Face à Face';
+    $('lbModeLabel').textContent = currentMode === 'juste_prix' ? 'Le Juste Prix' : currentMode === 'face_a_face' ? 'Face à Face' : 'Miniature Floutée';
     $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:16px 0;">Chargement…</td></tr></tbody>';
     try {
       const { leaderboard } = await callGame('get_leaderboard', { mode: currentMode, scope: lbScope });
@@ -292,7 +385,9 @@
       roundStates = rounds.map(() => ({ completed: false, correct: false, points: 0 }));
       roundIdx = 0;
       renderRoundProgress();
-      if (mode === 'juste_prix') renderJustePrixRound(); else renderFaceARoundStart();
+      if (mode === 'juste_prix') renderJustePrixRound();
+      else if (mode === 'face_a_face') renderFaceARoundStart();
+      else renderPhotoRound();
     } catch (e) { $play.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
   }
 
@@ -310,7 +405,9 @@
   function nextRoundOrFinish() {
     if (roundIdx < rounds.length - 1) {
       roundIdx++;
-      if (currentMode === 'juste_prix') renderJustePrixRound(); else renderFaceARoundStart();
+      if (currentMode === 'juste_prix') renderJustePrixRound();
+      else if (currentMode === 'face_a_face') renderFaceARoundStart();
+      else renderPhotoRound();
     } else {
       finishMode();
     }
@@ -434,6 +531,247 @@
       $result.innerHTML = res.correct ? `<span class="jp-result correct">✅ Bien joué ! +${res.points} pts</span>` : `<span class="jp-result">❌ Raté, ce n'était pas celle-là.</span>`;
       $next.hidden = false;
     } catch (e) { $result.innerHTML = `<span class="err">${escapeHtml(e.message)}</span>`; }
+  }
+
+  /* ---- Miniature Floutée ---- */
+  let photoAttempts = 0;
+  function renderPhotoRound() {
+    const round = rounds[roundIdx];
+    photoAttempts = 0;
+    const $play = $('playPanel');
+    $play.innerHTML = `<div class="round-progress">${rounds.map((r,i)=>{const st=roundStates[i];let cls=i===roundIdx?'active':'';if(st.completed) cls = st.correct?'done':'fail';return `<div class="round-dot ${cls}">${i+1}</div>`;}).join('')}</div>
+      <p class="ask" style="margin-bottom:10px;color:var(--ink-soft);font-size:0.85rem;">Quelle vidéo se cache derrière cette miniature floutée ?</p>
+      <div class="photo-mystery"><img id="photoMysteryImg" src="${round.mysteryThumbnailUrl||''}" alt="" style="filter:blur(${PHOTO_BLUR_LEVELS[0]}px);"></div>
+      <div class="photo-options" id="photoOptions">${round.options.map(o => `
+        <button class="photo-opt" data-option-id="${escapeHtml(o.id)}" type="button">
+          <div class="thumb">${o.thumbnailUrl?`<img src="${o.thumbnailUrl}" alt="">`:''}</div>
+          <div><h5>${escapeHtml(o.title||'')}</h5><span>${escapeHtml(o.channelTitle||'')}</span></div>
+        </button>`).join('')}</div>
+      <p class="jp-attempts" id="photoAttemptsLabel">3 essais restants</p>
+      <p class="jp-result" id="photoResult"></p>
+      <button class="btn ghost" id="photoNext" type="button" hidden>Manche suivante →</button>`;
+    $('photoOptions').querySelectorAll('[data-option-id]').forEach(b => b.addEventListener('click', () => submitPhotoGuess(b.dataset.optionId)));
+    $('photoNext').addEventListener('click', nextRoundOrFinish);
+  }
+
+  async function submitPhotoGuess(optionId) {
+    const round = rounds[roundIdx];
+    const $opts = $('photoOptions'), $result = $('photoResult'), $next = $('photoNext'), $attemptsLbl = $('photoAttemptsLabel'), $img = $('photoMysteryImg');
+    const $btn = $opts.querySelector(`[data-option-id="${CSS.escape(optionId)}"]`);
+    $opts.querySelectorAll('button').forEach(b => b.disabled = true);
+    try {
+      const res = await callGame('check_photo', { idToken, mode: 'photo_floutee', roundIndex: round.round, optionId });
+      if (res.completed) {
+        roundStates[roundIdx] = { completed: true, correct: res.correct, points: res.points||0 };
+        renderRoundProgress();
+        if ($img) $img.style.filter = 'blur(0px)';
+        const $correctBtn = $opts.querySelector(`[data-option-id="${CSS.escape(res.correctOptionId)}"]`);
+        if ($correctBtn) $correctBtn.classList.add('correct');
+        if (!res.correct && $btn) $btn.classList.add('wrong');
+        $result.innerHTML = res.correct ? `<span class="jp-result correct">✅ Bravo ! +${res.points} pts</span>` : `<span class="jp-result">❌ Essais épuisés, ce n'était pas la bonne vidéo.</span>`;
+        $next.hidden = false;
+      } else {
+        if ($btn) $btn.classList.add('wrong');
+        photoAttempts = res.attemptsUsed || (photoAttempts + 1);
+        if ($img) $img.style.filter = `blur(${PHOTO_BLUR_LEVELS[Math.min(photoAttempts, PHOTO_BLUR_LEVELS.length-1)]}px)`;
+        $attemptsLbl.textContent = `${res.attemptsLeft} essai(s) restant(s)`;
+        $result.innerHTML = `<span class="jp-result">❌ Pas la bonne vidéo, réessaie !</span>`;
+        $opts.querySelectorAll('button').forEach(b => { if (b.dataset.optionId !== optionId || true) b.disabled = false; });
+        if ($btn) $btn.disabled = true;
+      }
+    } catch (e) { $result.innerHTML = `<span class="err">${escapeHtml(e.message)}</span>`; $opts.querySelectorAll('button').forEach(b => b.disabled = false); }
+  }
+
+  /* ---------- pronostic quotidien ---------- */
+  function renderPredictRegionTabs() {
+    $('predictRegionTabs').innerHTML = REGIONS.map(r => `<button class="region-tab" data-region="${r.code}" aria-pressed="${r.code===predictRegion}">${r.label}</button>`).join('');
+    $('predictRegionTabs').querySelectorAll('[data-region]').forEach(b => b.addEventListener('click', () => {
+      predictRegion = b.dataset.region;
+      $('predictRegionTabs').querySelectorAll('[data-region]').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+      loadPrediction();
+    }));
+  }
+
+  async function loadPrediction() {
+    const $status = $('predictStatus'), $grid = $('predictGrid');
+    $status.innerHTML = '';
+    $grid.innerHTML = '<p class="hint">Chargement…</p>';
+    predictPicked = null;
+    try {
+      const { pending, last } = await callGame('get_my_prediction', { idToken, region: predictRegion });
+      if (last && last.resolved) {
+        const cls = last.correct ? 'correct' : 'wrong';
+        $status.innerHTML = `<div class="predict-status ${cls}">${last.correct ? '✅' : '❌'} Ton dernier pronostic (${escapeHtml(last.target_date)}) était ${last.correct ? 'correct' : 'incorrect'}${last.correct ? ` — +${last.points||0} pts` : ''}.</div>`;
+      }
+      if (pending) predictPicked = pending.video_id;
+
+      const { data, error } = await sb.from('agg_period').select('videos').eq('region', predictRegion).eq('period_type', 'daily').order('period_key', { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      const top10 = (data && Array.isArray(data.videos)) ? data.videos.slice(0, 10) : [];
+      if (!top10.length) { $grid.innerHTML = '<p class="hint">Pas encore de classement pour cette région aujourd\'hui.</p>'; return; }
+      $grid.innerHTML = top10.map((v, i) => `
+        <button class="predict-card ${v.videoId===predictPicked?'picked':''}" data-video-id="${escapeHtml(v.videoId||'')}" type="button" ${pending?'disabled':''}>
+          <div class="rank">${i+1}</div>
+          <div class="thumb">${v.thumbnailUrl?`<img src="${v.thumbnailUrl}" alt="" loading="lazy">`:''}</div>
+          <div class="pm"><h4>${escapeHtml(v.title||'')}</h4><span>${escapeHtml(v.channelTitle||'')}</span></div>
+        </button>`).join('');
+      if (pending) {
+        $status.innerHTML += `<div class="predict-status">🔮 Pronostic enregistré pour demain (${escapeHtml(pending.target_date)}). Reviens demain pour voir le résultat !</div>`;
+      } else {
+        $grid.querySelectorAll('[data-video-id]').forEach(b => b.addEventListener('click', () => submitPrediction(b.dataset.videoId)));
+      }
+    } catch (e) { $grid.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  async function submitPrediction(videoId) {
+    try {
+      await callGame('submit_prediction', { idToken, region: predictRegion, videoId });
+      loadPrediction();
+    } catch (e) {
+      $('predictStatus').innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  /* ---------- ligues entre amis ---------- */
+  function leagueInviteUrl(token) {
+    const url = new URL('jeu.html', location.href);
+    url.searchParams.set('ligue', token);
+    return url.toString();
+  }
+
+  async function loadLeagues() {
+    const $list = $('leaguesList');
+    $list.innerHTML = '<p class="hint">Chargement…</p>';
+    try {
+      const { leagues } = await callGame('get_my_leagues', { idToken });
+      if (!leagues.length) { $list.innerHTML = '<p class="hint">Tu ne fais partie d\'aucune ligue pour l\'instant.</p>'; return; }
+      $list.innerHTML = leagues.map(l => `
+        <div class="league-card" data-league-id="${escapeHtml(l.id)}">
+          <div class="lc-head">
+            <h3>${escapeHtml(l.name)}${l.isOwner?'<span class="league-owner-tag">Fondateur</span>':''}</h3>
+            <span class="lc-meta">${l.memberCount} membre${l.memberCount>1?'s':''}</span>
+          </div>
+          ${l.isOwner ? `
+          <div class="invite-row">
+            <input type="text" readonly value="${escapeHtml(leagueInviteUrl(l.inviteToken))}" data-invite-input>
+            <button class="btn ghost small" type="button" data-copy-invite>Copier le lien</button>
+            <label class="invite-toggle"><input type="checkbox" data-perpetual ${!l.inviteExpiresAt?'checked':''}> Lien permanent</label>
+            <button class="btn ghost small" type="button" data-regen>Régénérer</button>
+          </div>
+          ${l.inviteExpiresAt ? `<p class="hint">Expire le ${new Date(l.inviteExpiresAt).toLocaleString('fr-FR')}</p>` : ''}
+          ` : ''}
+          <div class="lc-actions">
+            <button class="btn ghost small" type="button" data-show-lb>Voir le classement</button>
+            <button class="btn ghost small" type="button" data-leave>${l.isOwner?'Supprimer la ligue':'Quitter la ligue'}</button>
+          </div>
+          <div class="league-lb-wrap" data-lb-wrap hidden></div>
+        </div>`).join('');
+      wireLeagueCards();
+    } catch (e) { $list.innerHTML = `<p class="err">${escapeHtml(e.message)}</p>`; }
+  }
+
+  function wireLeagueCards() {
+    document.querySelectorAll('.league-card').forEach(card => {
+      const leagueId = card.dataset.leagueId;
+      const copyBtn = card.querySelector('[data-copy-invite]');
+      if (copyBtn) copyBtn.addEventListener('click', async () => {
+        const val = card.querySelector('[data-invite-input]').value;
+        try { await navigator.clipboard.writeText(val); copyBtn.textContent = 'Copié !'; setTimeout(() => copyBtn.textContent = 'Copier le lien', 1500); }
+        catch { card.querySelector('[data-invite-input]').select(); }
+      });
+      const regenBtn = card.querySelector('[data-regen]');
+      if (regenBtn) regenBtn.addEventListener('click', async () => {
+        const perpetual = card.querySelector('[data-perpetual]').checked;
+        try { await callGame('regenerate_invite', { idToken, leagueId, perpetual }); loadLeagues(); }
+        catch (e) { alert(e.message); }
+      });
+      const leaveBtn = card.querySelector('[data-leave]');
+      leaveBtn.addEventListener('click', async () => {
+        try { await callGame('leave_league', { idToken, leagueId }); loadLeagues(); }
+        catch (e) { alert(e.message); }
+      });
+      const showLbBtn = card.querySelector('[data-show-lb]');
+      showLbBtn.addEventListener('click', () => toggleLeagueLeaderboard(card, leagueId));
+    });
+  }
+
+  function toggleLeagueLeaderboard(card, leagueId) {
+    const $wrap = card.querySelector('[data-lb-wrap]');
+    if (!$wrap.hidden) { $wrap.hidden = true; return; }
+    $wrap.hidden = false;
+    $wrap.innerHTML = `
+      <div class="lb-tabs" data-league-mode-tabs>
+        <button class="lb-tab" data-lmode="juste_prix" aria-pressed="true">Juste Prix</button>
+        <button class="lb-tab" data-lmode="face_a_face" aria-pressed="false">Face à Face</button>
+        <button class="lb-tab" data-lmode="photo_floutee" aria-pressed="false">Miniature</button>
+      </div>
+      <table class="lb" data-league-lb-table><tbody><tr><td style="color:var(--ink-faint);padding:10px 0;">Chargement…</td></tr></tbody></table>`;
+    let mode = 'juste_prix';
+    const load = async () => {
+      const $tbl = $wrap.querySelector('[data-league-lb-table]');
+      $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:10px 0;">Chargement…</td></tr></tbody>';
+      try {
+        const { leaderboard } = await callGame('get_league_leaderboard', { idToken, leagueId, mode, scope: 'daily' });
+        if (!leaderboard.length) { $tbl.innerHTML = '<tbody><tr><td style="color:var(--ink-faint);padding:10px 0;">Personne n\'a encore joué aujourd\'hui.</td></tr></tbody>'; return; }
+        $tbl.innerHTML = '<thead><tr><th>#</th><th>Joueur</th><th style="text-align:right;">Score</th></tr></thead><tbody>' +
+          leaderboard.map(r => `<tr><td class="rk">${r.rnk}</td><td>${escapeHtml(r.pseudo)}</td><td class="sc">${fmtFull.format(r.score)}</td></tr>`).join('') + '</tbody>';
+      } catch (e) { $tbl.innerHTML = `<tbody><tr><td style="color:var(--negative);padding:10px 0;">${escapeHtml(e.message)}</td></tr></tbody>`; }
+    };
+    $wrap.querySelectorAll('[data-lmode]').forEach(b => b.addEventListener('click', () => {
+      mode = b.dataset.lmode;
+      $wrap.querySelectorAll('[data-lmode]').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+      load();
+    }));
+    load();
+  }
+
+  $('leagueCreateBtn').addEventListener('click', async () => {
+    const name = $('leagueNameInput').value.trim();
+    $('leagueErr').hidden = true; $('leagueOk').hidden = true;
+    try {
+      await callGame('create_league', { idToken, name: name || 'Ma ligue' });
+      $('leagueNameInput').value = '';
+      loadLeagues();
+    } catch (e) { $('leagueErr').hidden = false; $('leagueErr').textContent = e.message; }
+  });
+
+  function extractInviteToken(raw) {
+    const val = String(raw || '').trim();
+    if (!val) return '';
+    try {
+      const url = new URL(val, location.href);
+      const t = url.searchParams.get('ligue');
+      if (t) return t;
+    } catch { /* not a URL, treat as raw token */ }
+    return val;
+  }
+
+  $('leagueJoinBtn').addEventListener('click', async () => {
+    const token = extractInviteToken($('leagueJoinInput').value);
+    $('leagueErr').hidden = true; $('leagueOk').hidden = true;
+    if (!token) { $('leagueErr').hidden = false; $('leagueErr').textContent = 'Colle un lien ou un code d\'invitation valide.'; return; }
+    try {
+      const { league } = await callGame('join_league', { idToken, token });
+      $('leagueJoinInput').value = '';
+      $('leagueOk').hidden = false; $('leagueOk').textContent = `Tu as rejoint la ligue « ${league.name} » !`;
+      loadLeagues();
+    } catch (e) { $('leagueErr').hidden = false; $('leagueErr').textContent = e.message; }
+  });
+
+  function maybeJoinFromUrl() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('ligue');
+    if (!token) return;
+    callGame('join_league', { idToken, token }).then(({ league }) => {
+      $('leagueOk').hidden = false; $('leagueOk').textContent = `Tu as rejoint la ligue « ${league.name} » !`;
+      loadLeagues();
+    }).catch((e) => {
+      $('leagueErr').hidden = false; $('leagueErr').textContent = e.message;
+    }).finally(() => {
+      params.delete('ligue');
+      const newUrl = location.pathname + (params.toString() ? '?' + params.toString() : '');
+      history.replaceState(null, '', newUrl);
+    });
   }
 
   initGsi();
